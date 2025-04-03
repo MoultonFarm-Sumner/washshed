@@ -1,6 +1,6 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Search } from "lucide-react";
+import { Search, Plus, Minus } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Product } from "@shared/schema";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -14,11 +14,23 @@ export default function RetailOverviewPage() {
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
   const [editingNotes, setEditingNotes] = useState<{ [key: number]: string }>({});
+  const [retailCounts, setRetailCounts] = useState<{ [key: number]: string }>({});
 
   // Fetch products
   const { data: products = [], isLoading } = useQuery<Product[]>({
     queryKey: ["/api/products"],
   });
+  
+  // Initialize retail counts when products are fetched
+  React.useEffect(() => {
+    if (products.length > 0 && Object.keys(retailCounts).length === 0) {
+      const initialCounts: { [key: number]: string } = {};
+      products.forEach((product: Product) => {
+        initialCounts[product.id] = product.washInventory || "0";
+      });
+      setRetailCounts(initialCounts);
+    }
+  }, [products, retailCounts]);
 
   // Mutation for updating retail notes
   const { mutate: updateRetailNotes } = useMutation({
@@ -44,11 +56,19 @@ export default function RetailOverviewPage() {
       });
     },
   });
+  
+  // Update retail count for a product (local state only)
+  const updateRetailCount = (productId: number, newCount: string) => {
+    setRetailCounts({
+      ...retailCounts,
+      [productId]: newCount
+    });
+  };
 
   // Filter products based on search query and sort alphabetically by name
   const filteredProducts = products
-    .filter((product) => product.name.toLowerCase().includes(searchQuery.toLowerCase()))
-    .sort((a, b) => a.name.localeCompare(b.name));
+    .filter((product: Product) => product.name.toLowerCase().includes(searchQuery.toLowerCase()))
+    .sort((a: Product, b: Product) => a.name.localeCompare(b.name));
 
   // Start editing notes for a product
   const startEditing = (productId: number, currentNotes: string = "") => {
@@ -141,7 +161,7 @@ export default function RetailOverviewPage() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {filteredProducts.map((product) => (
+                {filteredProducts.map((product: Product) => (
                   <tr key={product.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                       {product.name}
@@ -150,7 +170,48 @@ export default function RetailOverviewPage() {
                       {product.fieldLocation}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      <span className="font-medium">{product.washInventory || "0"}</span> {product.unit}
+                      <div className="flex items-center space-x-2">
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="h-6 w-6 rounded-full p-0"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            const currentValue = parseInt(retailCounts[product.id] || "0");
+                            const newValue = Math.max(0, currentValue - 1).toString();
+                            updateRetailCount(product.id, newValue);
+                          }}
+                        >
+                          <Minus className="h-3 w-3" />
+                        </Button>
+                        
+                        <Input
+                          className="w-16 h-7 px-1 text-center"
+                          value={retailCounts[product.id] || "0"}
+                          onChange={(e) => {
+                            // Ensure input is a number
+                            const value = e.target.value;
+                            if (/^\d*$/.test(value)) {
+                              updateRetailCount(product.id, value);
+                            }
+                          }}
+                        />
+                        
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="h-6 w-6 rounded-full p-0"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            const currentValue = parseInt(retailCounts[product.id] || "0");
+                            const newValue = (currentValue + 1).toString();
+                            updateRetailCount(product.id, newValue);
+                          }}
+                        >
+                          <Plus className="h-3 w-3" />
+                        </Button>
+                        <span className="ml-1">{product.unit}</span>
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {product.harvestBins || "None"}

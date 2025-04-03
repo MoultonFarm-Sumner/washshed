@@ -180,7 +180,6 @@ export default function InventoryPage() {
       <Tabs defaultValue="field" className="w-full">
         <TabsList className="mb-4">
           <TabsTrigger value="field">Field Inventory</TabsTrigger>
-          <TabsTrigger value="wash">Wash Shed Inventory</TabsTrigger>
           <TabsTrigger value="wholesale-kitchen">Wholesale/Kitchen</TabsTrigger>
         </TabsList>
 
@@ -190,26 +189,6 @@ export default function InventoryPage() {
               <CardTitle>Field Inventory</CardTitle>
               <CardDescription>
                 View and manage inventory for field operations
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="bg-white rounded-lg">
-                <DraggableInventoryTable 
-                  products={filteredProducts.filter(p => !["Wholesale", "Kitchen"].includes(p.fieldLocation))} 
-                  onViewDetails={handleViewProductDetails}
-                  onOrderChanged={handleProductsReordered}
-                />
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="wash" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Wash Shed Inventory</CardTitle>
-              <CardDescription>
-                View and manage inventory in the wash shed
               </CardDescription>
             </CardHeader>
             <CardContent>

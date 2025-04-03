@@ -19,9 +19,7 @@ export default function Header() {
   // Define the tabs and their paths
   const tabs = [
     { name: "Wash Shed Inventory", path: "/inventory" },
-    { name: "Retail", path: "/retail" },
-    { name: "Wholesale", path: "/wholesale" },
-    { name: "Kitchen", path: "/kitchen" },
+    { name: "Retail Overview", path: "/retail" },
     { name: "Field Locations", path: "/fields" },
     { name: "Inventory History", path: "/history" },
     { name: "Reports", path: "/reports" },

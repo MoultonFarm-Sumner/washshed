@@ -8,13 +8,11 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
+  DialogClose,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -22,8 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { MapPin, Save, Store, Warehouse, Utensils } from "lucide-react";
-import { Separator } from "@/components/ui/separator";
+import { MapPin, Save } from "lucide-react";
 
 interface ProductDetailsModalProps {
   product: Product;
@@ -48,9 +45,6 @@ export default function ProductDetailsModal({
   const [unitsHarvested, setUnitsHarvested] = useState(product.unitsHarvested || "");
   const [currentStock, setCurrentStock] = useState(product.currentStock);
   const [fieldLocation, setFieldLocation] = useState(product.fieldLocation);
-  const [showInRetail, setShowInRetail] = useState(product.showInRetail !== undefined ? product.showInRetail : true);
-  const [showInWholesale, setShowInWholesale] = useState(product.showInWholesale !== undefined ? product.showInWholesale : false);
-  const [showInKitchen, setShowInKitchen] = useState(product.showInKitchen !== undefined ? product.showInKitchen : false);
   
   // Fetch field locations for dropdown
   const { data: fieldLocations = [] } = useQuery<FieldLocation[]>({
@@ -97,10 +91,7 @@ export default function ProductDetailsModal({
       harvestBins,
       unitsHarvested,
       currentStock,
-      fieldLocation,
-      showInRetail,
-      showInWholesale,
-      showInKitchen
+      fieldLocation
     });
   };
 
@@ -224,49 +215,6 @@ export default function ProductDetailsModal({
             onChange={(e) => setCurrentStock(parseInt(e.target.value) || 0)}
             min={0}
           />
-        </div>
-
-        <Separator className="my-4" />
-        
-        <div className="mb-4">
-          <h3 className="text-md font-medium mb-2">Display In:</h3>
-          <div className="space-y-3">
-            <div className="flex flex-row items-center justify-between rounded-lg border p-3">
-              <div className="flex items-center space-x-2">
-                <Store className="h-4 w-4 text-green-600" />
-                <Label htmlFor="retail-toggle" className="m-0">Retail</Label>
-              </div>
-              <Switch 
-                id="retail-toggle" 
-                checked={showInRetail} 
-                onCheckedChange={setShowInRetail}
-              />
-            </div>
-            
-            <div className="flex flex-row items-center justify-between rounded-lg border p-3">
-              <div className="flex items-center space-x-2">
-                <Warehouse className="h-4 w-4 text-blue-600" />
-                <Label htmlFor="wholesale-toggle" className="m-0">Wholesale</Label>
-              </div>
-              <Switch 
-                id="wholesale-toggle" 
-                checked={showInWholesale} 
-                onCheckedChange={setShowInWholesale}
-              />
-            </div>
-            
-            <div className="flex flex-row items-center justify-between rounded-lg border p-3">
-              <div className="flex items-center space-x-2">
-                <Utensils className="h-4 w-4 text-amber-600" />
-                <Label htmlFor="kitchen-toggle" className="m-0">Kitchen</Label>
-              </div>
-              <Switch 
-                id="kitchen-toggle" 
-                checked={showInKitchen} 
-                onCheckedChange={setShowInKitchen}
-              />
-            </div>
-          </div>
         </div>
 
         <Button 

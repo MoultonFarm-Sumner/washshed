@@ -12,7 +12,6 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
-  DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,13 +21,8 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-  FormDescription,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
 import {
   Select,
   SelectContent,
@@ -36,16 +30,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Loader2, Store, Warehouse, Utensils } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 // Define the form schema using zod
 const formSchema = z.object({
   name: z.string().min(1, "Crop name is required"),
   fieldLocation: z.string().min(1, "Field location is required"),
   currentStock: z.coerce.number().int().min(0, "Stock must be 0 or more"),
-  showInRetail: z.boolean().default(true),
-  showInWholesale: z.boolean().default(false),
-  showInKitchen: z.boolean().default(false),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -75,9 +66,6 @@ export default function AddProductModal({
       name: "",
       fieldLocation: "",
       currentStock: 0,
-      showInRetail: true,
-      showInWholesale: false,
-      showInKitchen: false,
     },
   });
 
@@ -95,9 +83,6 @@ export default function AddProductModal({
         washInventory: "0",
         harvestBins: "0",
         unitsHarvested: "0",
-        showInRetail: values.showInRetail,
-        showInWholesale: values.showInWholesale,
-        showInKitchen: values.showInKitchen,
       };
       return apiRequest("POST", "/api/products", newProduct);
     },
@@ -193,69 +178,6 @@ export default function AddProductModal({
                 </FormItem>
               )}
             />
-
-            <Separator className="my-4" />
-            
-            <div className="space-y-3">
-              <h3 className="text-md font-medium">Display In:</h3>
-              
-              <FormField
-                control={form.control}
-                name="showInRetail"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
-                    <div className="flex items-center space-x-2">
-                      <Store className="h-4 w-4" />
-                      <FormLabel className="m-0">Retail</FormLabel>
-                    </div>
-                    <FormControl>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="showInWholesale"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
-                    <div className="flex items-center space-x-2">
-                      <Warehouse className="h-4 w-4" />
-                      <FormLabel className="m-0">Wholesale</FormLabel>
-                    </div>
-                    <FormControl>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="showInKitchen"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
-                    <div className="flex items-center space-x-2">
-                      <Utensils className="h-4 w-4" />
-                      <FormLabel className="m-0">Kitchen</FormLabel>
-                    </div>
-                    <FormControl>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-            </div>
                         
             <DialogFooter>
               <Button 

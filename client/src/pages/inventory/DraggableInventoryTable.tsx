@@ -194,40 +194,40 @@ export default function DraggableInventoryTable({ products, onViewDetails, onOrd
   };
 
   return (
-    <div className="overflow-x-auto bg-white rounded-lg shadow">
+    <div className="overflow-x-auto">
       <DndContext 
         sensors={sensors}
         collisionDetection={closestCenter}
         onDragEnd={handleDragEnd}
       >
-        <table className="min-w-full divide-y divide-gray-200 border-collapse">
-          <thead className="bg-gray-100 sticky top-0">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
             <tr>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider w-[160px]">
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Field Location
               </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider w-[180px]">
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Crop
               </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider w-[100px]">
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Crop Needs
               </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider w-[120px]">
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Stand Inventory
               </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider w-[120px]">
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Wash Inventory
               </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider w-[100px]">
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Harvest Bins
               </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider w-[110px]">
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Units Harvested
               </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Field Notes
               </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider w-[100px]">
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Actions
               </th>
             </tr>
@@ -242,35 +242,32 @@ export default function DraggableInventoryTable({ products, onViewDetails, onOrd
                   key={product.id}
                   id={product.id.toString()}
                   onClick={() => onViewDetails(product)}
-                  className="hover:bg-gray-50 transition-colors"
                 >
-                  <td className="px-4 py-2 text-sm">
-                    <div className="font-medium text-gray-700">
-                      {renderEditableTextField(product, "fieldLocation")}
-                    </div>
+                  <td className="px-4 py-3 whitespace-nowrap text-sm">
+                    {renderEditableTextField(product, "fieldLocation")}
                   </td>
-                  <td className="px-4 py-2 text-sm text-gray-800 font-medium">
+                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-800">
                     {product.name}
                   </td>
-                  <td className="px-4 py-2 text-sm">
+                  <td className="px-4 py-3 whitespace-nowrap text-sm">
                     {renderEditableTextField(product, "cropNeeds")}
                   </td>
-                  <td className="px-4 py-2 text-sm">
+                  <td className="px-4 py-3 whitespace-nowrap text-sm">
                     {renderNumericField(product, "standInventory")}
                   </td>
-                  <td className="px-4 py-2 text-sm">
+                  <td className="px-4 py-3 whitespace-nowrap text-sm">
                     {renderNumericField(product, "washInventory")}
                   </td>
-                  <td className="px-4 py-2 text-sm">
+                  <td className="px-4 py-3 whitespace-nowrap text-sm">
                     {renderEditableTextField(product, "harvestBins")}
                   </td>
-                  <td className="px-4 py-2 text-sm">
+                  <td className="px-4 py-3 whitespace-nowrap text-sm">
                     {renderEditableTextField(product, "unitsHarvested")}
                   </td>
-                  <td className="px-4 py-2 text-sm">
+                  <td className="px-4 py-3 text-sm max-w-[200px]">
                     {renderEditableTextField(product, "fieldNotes")}
                   </td>
-                  <td className="px-4 py-2 text-sm font-medium">
+                  <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">
                     <Button
                       variant="outline"
                       size="sm"
@@ -278,7 +275,7 @@ export default function DraggableInventoryTable({ products, onViewDetails, onOrd
                         e.stopPropagation();
                         onViewDetails(product);
                       }}
-                      className="w-full text-xs bg-white hover:bg-gray-100"
+                      className="px-2 py-1 text-xs"
                     >
                       Details
                     </Button>

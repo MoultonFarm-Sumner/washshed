@@ -44,7 +44,6 @@ export default function ProductDetailsModal({
   const [harvestBins, setHarvestBins] = useState(product.harvestBins || "");
   const [unitsHarvested, setUnitsHarvested] = useState(product.unitsHarvested || "");
   const [currentStock, setCurrentStock] = useState(product.currentStock);
-  const [unit, setUnit] = useState<string>(product.unit || "each");
   const [fieldLocation, setFieldLocation] = useState(product.fieldLocation);
   
   // Fetch field locations for dropdown
@@ -92,7 +91,6 @@ export default function ProductDetailsModal({
       harvestBins,
       unitsHarvested,
       currentStock,
-      unit,
       fieldLocation
     });
   };
@@ -207,35 +205,16 @@ export default function ProductDetailsModal({
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-4 mb-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Current Stock
-            </label>
-            <Input
-              type="number"
-              value={currentStock}
-              onChange={(e) => setCurrentStock(parseInt(e.target.value) || 0)}
-              min={0}
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Unit
-            </label>
-            <Select value={unit} onValueChange={setUnit}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select unit" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="bunches">bunches</SelectItem>
-                <SelectItem value="lbs">lbs</SelectItem>
-                <SelectItem value="boxes">boxes</SelectItem>
-                <SelectItem value="each">each</SelectItem>
-                <SelectItem value="heads">heads</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Current Stock
+          </label>
+          <Input
+            type="number"
+            value={currentStock}
+            onChange={(e) => setCurrentStock(parseInt(e.target.value) || 0)}
+            min={0}
+          />
         </div>
 
         <Button 

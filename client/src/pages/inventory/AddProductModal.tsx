@@ -1,17 +1,19 @@
 import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { InsertProduct, FieldLocation } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
-import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { productFormSchema } from "@shared/schema";
+import { z } from "zod";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
 } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -21,8 +23,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -30,173 +30,137 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Save, Image, X } from "lucide-react";
+import { Loader2 } from "lucide-react";
+
+// Define the form schema using zod
+const formSchema = z.object({
+  name: z.string().min(1, "Crop name is required"),
+  fieldLocation: z.string().min(1, "Field location is required"),
+  currentStock: z.coerce.number().int().min(0, "Stock must be 0 or more"),
+});
+
+type FormValues = z.infer<typeof formSchema>;
 
 interface AddProductModalProps {
   isOpen: boolean;
   onClose: () => void;
   onProductAdded: () => void;
-  fieldLocations: any[];
 }
 
 export default function AddProductModal({
   isOpen,
   onClose,
   onProductAdded,
-  fieldLocations,
 }: AddProductModalProps) {
   const { toast } = useToast();
-  const [imageUrl, setImageUrl] = useState("");
+  
+  // Fetch field locations
+  const { data: fieldLocations = [] } = useQuery<FieldLocation[]>({
+    queryKey: ["/api/field-locations"],
+  });
 
-  // Form definition with Zod validation
-  const form = useForm<z.infer<typeof productFormSchema>>({
-    resolver: zodResolver(productFormSchema),
+  // Define form with validation
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
       fieldLocation: "",
       currentStock: 0,
-      unit: "bunches",
-      fieldNotes: "",
-      retailNotes: "",
-      cropNeeds: "",
-      standInventory: "",
-      washInventory: "",
-      harvestBins: "",
-      unitsHarvested: "",
-      imageUrl: "",
     },
   });
 
-  // Mutation for adding a new product
+  // Mutation for creating a new product
   const { mutate: addProduct, isPending } = useMutation({
-    mutationFn: (data: z.infer<typeof productFormSchema>) => {
-      return apiRequest("POST", "/api/products", {
-        ...data,
-        imageUrl: imageUrl || undefined,
-      });
+    mutationFn: (values: FormValues) => {
+      const newProduct: InsertProduct = {
+        name: values.name,
+        fieldLocation: values.fieldLocation,
+        currentStock: values.currentStock,
+        dateAdded: new Date().toISOString(),
+        fieldNotes: "",
+        retailNotes: "",
+        cropNeeds: "",
+        standInventory: "0",
+        washInventory: "0",
+        harvestBins: "0",
+        unitsHarvested: "0",
+      };
+      return apiRequest("POST", "/api/products", newProduct);
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+      form.reset();
       onProductAdded();
       onClose();
-      form.reset();
-      setImageUrl("");
       toast({
         title: "Success",
-        description: "Product added successfully",
+        description: "New crop added successfully",
       });
     },
     onError: (error) => {
       toast({
         title: "Error",
-        description: "Failed to add product",
+        description: "Failed to add the new crop",
         variant: "destructive",
       });
     },
   });
 
-  // Handle form submission
-  const onSubmit = (data: z.infer<typeof productFormSchema>) => {
-    addProduct({
-      ...data,
-      imageUrl: imageUrl,
-    });
-  };
-
-  // Handle image URL input
-  const handleImageUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setImageUrl(e.target.value);
-  };
-
-  // For a production app, you'd implement file upload here
-  // This is a simplified version using direct URL input
-  const handleImageUpload = () => {
-    // Open a dialog to prompt for image URL
-    const url = prompt("Enter the URL of the image:");
-    if (url) {
-      setImageUrl(url);
-    }
+  const onSubmit = (values: FormValues) => {
+    addProduct(values);
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Add New Product</DialogTitle>
+          <DialogTitle>Add New Crop</DialogTitle>
         </DialogHeader>
+        
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <FormField
               control={form.control}
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Product Name</FormLabel>
+                  <FormLabel>Crop Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., Carrots, Tomatoes, etc." {...field} />
+                    <Input placeholder="Enter crop name" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="fieldLocation"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Field Location</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a location" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {fieldLocations.map((location) => (
-                          <SelectItem key={location.id} value={location.name}>
-                            {location.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="unit"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Unit Type</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a unit" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="bunches">bunches</SelectItem>
-                        <SelectItem value="lbs">lbs</SelectItem>
-                        <SelectItem value="heads">heads</SelectItem>
-                        <SelectItem value="boxes">boxes</SelectItem>
-                        <SelectItem value="each">each</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
+            
+            <FormField
+              control={form.control}
+              name="fieldLocation"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Field Location</FormLabel>
+                  <Select 
+                    onValueChange={field.onChange} 
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select field location" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {fieldLocations.map((location) => (
+                        <SelectItem key={location.id} value={location.name}>
+                          {location.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
             <FormField
               control={form.control}
               name="currentStock"
@@ -204,192 +168,42 @@ export default function AddProductModal({
                 <FormItem>
                   <FormLabel>Initial Stock</FormLabel>
                   <FormControl>
-                    <Input
-                      type="number"
-                      placeholder="Enter initial quantity"
+                    <Input 
+                      type="number" 
                       min={0}
-                      {...field}
-                      onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                      placeholder="0" 
+                      {...field} 
                     />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-
-            <FormField
-              control={form.control}
-              name="cropNeeds"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Crop Needs</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="Enter crop needs"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="standInventory"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Stand Inventory</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Stand inventory" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="washInventory"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Wash Inventory</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Wash inventory" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="harvestBins"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Harvest Bins</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Harvest bins" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="unitsHarvested"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Units Harvested</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Units harvested" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <FormField
-              control={form.control}
-              name="fieldNotes"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Field Notes</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Enter field notes, growing conditions, etc."
-                      rows={2}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="retailNotes"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Retail Notes</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Enter information for market/sales use"
-                      rows={2}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div>
-              <FormLabel>Product Image</FormLabel>
-              <div className="mt-1 flex items-center">
-                <div className="flex-shrink-0 h-16 w-16 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
-                  {imageUrl ? (
-                    <div className="relative w-full h-full">
-                      <img
-                        src={imageUrl}
-                        alt="Product preview"
-                        className="object-cover w-full h-full"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setImageUrl("")}
-                        className="absolute top-0 right-0 bg-red-500 text-white p-1 rounded-bl-lg"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    </div>
-                  ) : (
-                    <Image className="h-6 w-6 text-gray-400" />
-                  )}
-                </div>
-                <div className="ml-4 flex flex-col sm:flex-row gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={handleImageUpload}
-                  >
-                    Upload Image
-                  </Button>
-                  <Input
-                    type="text"
-                    placeholder="or enter image URL"
-                    value={imageUrl}
-                    onChange={handleImageUrlChange}
-                    className="flex-1 w-full sm:w-auto"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="flex justify-end gap-2 pt-2">
-              <Button
-                type="button"
-                variant="outline"
+                        
+            <DialogFooter>
+              <Button 
+                type="button" 
+                variant="outline" 
                 onClick={onClose}
+                disabled={isPending}
               >
                 Cancel
               </Button>
               <Button 
-                type="submit" 
+                type="submit"
+                className="bg-primary hover:bg-green-800" 
                 disabled={isPending}
-                className="bg-primary hover:bg-green-800"
               >
-                <Save className="mr-1 h-4 w-4" />
-                Save Product
+                {isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Adding...
+                  </>
+                ) : (
+                  "Add Crop"
+                )}
               </Button>
-            </div>
+            </DialogFooter>
           </form>
         </Form>
       </DialogContent>

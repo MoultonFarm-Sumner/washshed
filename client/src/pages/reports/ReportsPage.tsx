@@ -32,11 +32,20 @@ export default function ReportsPage() {
   const formattedStartDate = startDate ? new Date(startDate).toISOString() : undefined;
   const formattedEndDate = endDate ? new Date(endDate).toISOString() : undefined;
 
+  // Build query params - explicitly do NOT include wholesale/kitchen
+  const queryParams = new URLSearchParams();
+  if (formattedStartDate && formattedEndDate) {
+    queryParams.append('startDate', formattedStartDate);
+    queryParams.append('endDate', formattedEndDate);
+  }
+  // Always exclude wholesale/kitchen entries
+  queryParams.append('includeWholesaleKitchen', 'false');
+  
+  const queryString = queryParams.toString() ? `?${queryParams.toString()}` : '';
+  
   const historyQueryKey = [
     "/api/inventory/history",
-    ...(formattedStartDate && formattedEndDate && showReport
-      ? [`?startDate=${formattedStartDate}&endDate=${formattedEndDate}`]
-      : [""]),
+    showReport ? queryString : "",
   ];
 
   const { data: historyData = [], isLoading: historyLoading } = useQuery<HistoryEntry[]>({
@@ -59,6 +68,11 @@ export default function ReportsPage() {
 
     // Initialize with all products at 0
     products.forEach((product: Product) => {
+      // Filter out wholesale/kitchen products
+      if(["Wholesale", "Kitchen"].includes(product.fieldLocation)) {
+        return; // Skip wholesale/kitchen products
+      }
+      
       productSummary.set(product.id, {
         id: product.id,
         name: product.name,
@@ -71,7 +85,8 @@ export default function ReportsPage() {
         isLowStock: product.currentStock < 10,
         isCriticalStock: product.currentStock < 5,
         fieldNotes: product.fieldNotes,
-        retailNotes: product.retailNotes
+        retailNotes: product.retailNotes,
+        washInventory: product.washInventory || "Not specified"
       });
     });
 
@@ -254,6 +269,9 @@ export default function ReportsPage() {
                             Changes
                           </th>
                           <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Wash Inventory
+                          </th>
+                          <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Field Notes
                           </th>
                           <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -284,6 +302,11 @@ export default function ReportsPage() {
                                 <span className="text-red-600 font-medium">
                                   {product.removed > 0 ? `-${product.removed}` : ""}
                                 </span>
+                              </div>
+                            </td>
+                            <td className="px-3 py-4 text-sm text-gray-800 max-w-[200px]">
+                              <div className="truncate" title={product.washInventory || "-"}>
+                                {product.washInventory || "-"}
                               </div>
                             </td>
                             <td className="px-3 py-4 text-sm text-gray-800 max-w-[200px]">
@@ -325,6 +348,9 @@ export default function ReportsPage() {
                             Status
                           </th>
                           <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Wash Inventory
+                          </th>
+                          <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Field Notes
                           </th>
                           <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -363,6 +389,11 @@ export default function ReportsPage() {
                                 </span>
                               </td>
                               <td className="px-3 py-4 text-sm text-gray-800 max-w-[200px]">
+                                <div className="truncate" title={product.washInventory || "-"}>
+                                  {product.washInventory || "-"}
+                                </div>
+                              </td>
+                              <td className="px-3 py-4 text-sm text-gray-800 max-w-[200px]">
                                 <div className="truncate" title={product.fieldNotes || "-"}>
                                   {product.fieldNotes || "-"}
                                 </div>
@@ -377,7 +408,7 @@ export default function ReportsPage() {
                         {reportData.filter((product: ReportItem) => product.isLowStock).length === 0 && (
                           <tr>
                             <td
-                              colSpan={7}
+                              colSpan={8}
                               className="px-3 py-4 text-sm text-gray-500 text-center"
                             >
                               No low stock items found

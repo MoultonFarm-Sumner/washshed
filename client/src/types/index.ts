@@ -35,6 +35,11 @@ export interface ReportItem {
   isCriticalStock: boolean;
   fieldNotes?: string;
   retailNotes?: string;
+  washInventory?: string;
+  standInventory?: string;
+  harvestBins?: string;
+  cropNeeds?: string;
+  unitsHarvested?: string;
 }
 
 export interface HistoryEntry {

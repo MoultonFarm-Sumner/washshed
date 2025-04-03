@@ -32,12 +32,13 @@ export async function generatePDF(
   // Use the autotable plugin to create inventory table
   (doc as any).autoTable({
     startY: 50,
-    head: [['Field Location', 'Crop', 'Current Stock', 'Units', 'Field Notes', 'Retail Notes']],
+    head: [['Field Location', 'Crop', 'Current Stock', 'Units', 'Wash Inventory', 'Field Notes', 'Retail Notes']],
     body: reportData.map(item => [
       item.fieldLocation,
       item.name,
       item.current,
       item.unit,
+      item.washInventory || '-',
       item.fieldNotes || '-',
       item.retailNotes || '-'
     ]),
@@ -52,7 +53,8 @@ export async function generatePDF(
     },
     columnStyles: {
       4: { cellWidth: 'auto' },
-      5: { cellWidth: 'auto' }
+      5: { cellWidth: 'auto' },
+      6: { cellWidth: 'auto' }
     },
     styles: {
       overflow: 'linebreak',
@@ -70,13 +72,14 @@ export async function generatePDF(
     
     (doc as any).autoTable({
       startY: lowStockY + 4,
-      head: [['Field Location', 'Crop', 'Current Stock', 'Units', 'Status', 'Field Notes', 'Retail Notes']],
+      head: [['Field Location', 'Crop', 'Current Stock', 'Units', 'Status', 'Wash Inventory', 'Field Notes', 'Retail Notes']],
       body: lowStockItems.map(item => [
         item.fieldLocation,
         item.name,
         item.current,
         item.unit,
         item.isCriticalStock ? 'Critical Stock' : 'Low Stock',
+        item.washInventory || '-',
         item.fieldNotes || '-',
         item.retailNotes || '-'
       ]),
@@ -100,7 +103,8 @@ export async function generatePDF(
           }
         },
         5: { cellWidth: 'auto' },
-        6: { cellWidth: 'auto' }
+        6: { cellWidth: 'auto' },
+        7: { cellWidth: 'auto' }
       },
       styles: {
         overflow: 'linebreak',

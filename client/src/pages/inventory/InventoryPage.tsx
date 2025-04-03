@@ -296,6 +296,7 @@ export default function InventoryPage() {
                                         unit: product.unit,
                                         minStock: 0,
                                         retailNotes: product.retailNotes,
+                                        fieldNotes: product.fieldNotes,
                                       };
                                       
                                       addProductMutation(newWholesaleProduct);
@@ -341,6 +342,7 @@ export default function InventoryPage() {
                                         unit: product.unit,
                                         minStock: 0,
                                         retailNotes: product.retailNotes,
+                                        fieldNotes: product.fieldNotes,
                                       };
                                       
                                       addProductMutation(newWholesaleProduct);
@@ -381,6 +383,7 @@ export default function InventoryPage() {
                                         unit: product.unit,
                                         minStock: 0,
                                         retailNotes: product.retailNotes,
+                                        fieldNotes: product.fieldNotes,
                                       };
                                       
                                       addProductMutation(newKitchenProduct);
@@ -426,6 +429,7 @@ export default function InventoryPage() {
                                         unit: product.unit,
                                         minStock: 0,
                                         retailNotes: product.retailNotes,
+                                        fieldNotes: product.fieldNotes,
                                       };
                                       
                                       addProductMutation(newKitchenProduct);

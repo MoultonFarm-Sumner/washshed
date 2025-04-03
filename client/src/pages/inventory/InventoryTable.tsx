@@ -179,6 +179,9 @@ export default function InventoryTable({ products, onViewDetails }: Props) {
               Field Notes
             </th>
             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Retail Notes
+            </th>
+            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Actions
             </th>
           </tr>
@@ -213,6 +216,9 @@ export default function InventoryTable({ products, onViewDetails }: Props) {
               </td>
               <td className="px-4 py-3 text-sm max-w-[200px]">
                 {renderEditableTextField(product, "fieldNotes")}
+              </td>
+              <td className="px-4 py-3 text-sm max-w-[200px]">
+                {renderEditableTextField(product, "retailNotes")}
               </td>
               <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">
                 <Button

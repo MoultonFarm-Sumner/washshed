@@ -99,8 +99,8 @@ export default function EnhancedReportsPage() {
   .sort();
 
   // Fetch inventory history with date filtering
-  const formattedStartDate = startDate ? new Date(startDate).toISOString() : undefined;
-  const formattedEndDate = endDate ? new Date(endDate).toISOString() : undefined;
+  const formattedStartDate = startDate ? new Date(`${startDate}T00:00:00.000Z`).toISOString() : undefined;
+  const formattedEndDate = endDate ? new Date(`${endDate}T23:59:59.999Z`).toISOString() : undefined;
 
   // Build query params - explicitly do NOT include wholesale/kitchen
   const queryParams = new URLSearchParams();

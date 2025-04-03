@@ -32,13 +32,27 @@ export async function generatePDF(
   // Use the autotable plugin to create inventory table
   (doc as any).autoTable({
     startY: 50,
-    head: [['Field Location', 'Crop', 'Current Stock', 'Units', 'Wash Inventory', 'Field Notes', 'Retail Notes']],
+    head: [
+      [
+        'Field Location', 
+        'Crop', 
+        'Starting Stock (Wash)', 
+        'Added (Wash)', 
+        'Removed (Wash)', 
+        'Current Stock (Wash)',
+        'Units', 
+        'Field Notes', 
+        'Retail Notes'
+      ]
+    ],
     body: reportData.map(item => [
       item.fieldLocation,
       item.name,
+      item.starting,
+      item.added,
+      item.removed,
       item.current,
       item.unit,
-      item.washInventory || '-',
       item.fieldNotes || '-',
       item.retailNotes || '-'
     ]),
@@ -52,9 +66,15 @@ export async function generatePDF(
       fillColor: [240, 240, 240]
     },
     columnStyles: {
-      4: { cellWidth: 'auto' },
-      5: { cellWidth: 'auto' },
-      6: { cellWidth: 'auto' }
+      0: { cellWidth: 'auto' },  // Field Location
+      1: { cellWidth: 'auto' },  // Crop
+      2: { cellWidth: 'auto' },  // Starting Stock
+      3: { cellWidth: 'auto' },  // Added
+      4: { cellWidth: 'auto' },  // Removed
+      5: { cellWidth: 'auto' },  // Current Stock
+      6: { cellWidth: 'auto' },  // Units
+      7: { cellWidth: 'auto' },  // Field Notes
+      8: { cellWidth: 'auto' },  // Retail Notes
     },
     styles: {
       overflow: 'linebreak',
@@ -72,16 +92,29 @@ export async function generatePDF(
     
     (doc as any).autoTable({
       startY: lowStockY + 4,
-      head: [['Field Location', 'Crop', 'Current Stock', 'Units', 'Status', 'Wash Inventory', 'Field Notes', 'Retail Notes']],
+      head: [
+        [
+          'Field Location', 
+          'Crop', 
+          'Current Stock (Wash)', 
+          'Units', 
+          'Status', 
+          'Starting Stock (Wash)', 
+          'Added (Wash)', 
+          'Removed (Wash)', 
+          'Field Notes'
+        ]
+      ],
       body: lowStockItems.map(item => [
         item.fieldLocation,
         item.name,
         item.current,
         item.unit,
         item.isCriticalStock ? 'Critical Stock' : 'Low Stock',
-        item.washInventory || '-',
-        item.fieldNotes || '-',
-        item.retailNotes || '-'
+        item.starting,
+        item.added,
+        item.removed,
+        item.fieldNotes || '-'
       ]),
       theme: 'grid',
       headStyles: {
@@ -93,18 +126,23 @@ export async function generatePDF(
         fillColor: [240, 240, 240]
       },
       columnStyles: {
-        4: {
+        0: { cellWidth: 'auto' },  // Field Location
+        1: { cellWidth: 'auto' },  // Crop
+        2: { cellWidth: 'auto' },  // Current Stock
+        3: { cellWidth: 'auto' },  // Units
+        4: {                       // Status
           fontStyle: 'bold',
           textColor: (data: any) => {
             if (data.cell.raw === 'Critical Stock') {
-              return [229, 57, 53]; // Red
+              return [229, 57, 53]; // Red for Critical
             }
-            return [255, 160, 0]; // Yellow
+            return [255, 160, 0];   // Yellow for Low
           }
         },
-        5: { cellWidth: 'auto' },
-        6: { cellWidth: 'auto' },
-        7: { cellWidth: 'auto' }
+        5: { cellWidth: 'auto' },  // Starting
+        6: { cellWidth: 'auto' },  // Added
+        7: { cellWidth: 'auto' },  // Removed
+        8: { cellWidth: 'auto' }   // Field Notes
       },
       styles: {
         overflow: 'linebreak',

@@ -116,15 +116,20 @@ export default function EnhancedReportsPage() {
   const historyQueryKey = [
     "/api/inventory/history",
     showReport ? queryString : "",
+    startDate,
+    endDate
   ];
 
   const { data: historyData = [], isLoading: historyLoading } = useQuery<HistoryEntry[]>({
     queryKey: historyQueryKey,
     enabled: showReport,
+    refetchOnWindowFocus: false,
+    staleTime: 0,
+    gcTime: 0
   });
 
   // Filter history data based on product selection
-  const filteredHistory = historyData.filter((entry) => {
+  const filteredHistory = (Array.isArray(historyData) ? historyData : []).filter((entry: HistoryEntry) => {
     if (filterBy === "all") return true;
     return entry.productId === parseInt(filterBy);
   });
@@ -136,6 +141,9 @@ export default function EnhancedReportsPage() {
     // Group data by product for summary
     const productSummary = new Map();
 
+    // Debug information
+    console.log("History entries in date range:", filteredHistory.length);
+    
     // Initialize with all products at 0
     products
       .filter(product => {
@@ -152,17 +160,18 @@ export default function EnhancedReportsPage() {
         return true;
       })
       .forEach((product: Product) => {
+        const currentStock = parseInt(product.washInventory || '0') || 0;
         productSummary.set(product.id, {
           id: product.id,
           name: product.name,
           fieldLocation: product.fieldLocation,
           unit: product.unit,
-          starting: 0,
+          starting: currentStock, // Initialize starting with current, will be adjusted later
           added: 0,
           removed: 0,
-          current: parseInt(product.washInventory || '0') || 0, // Use wash inventory for current stock
-          isLowStock: (parseInt(product.washInventory || '0') || 0) < product.minStock,
-          isCriticalStock: (parseInt(product.washInventory || '0') || 0) < Math.floor(product.minStock / 2),
+          current: currentStock, // Use wash inventory for current stock
+          isLowStock: currentStock < product.minStock,
+          isCriticalStock: currentStock < Math.floor(product.minStock / 2),
           fieldNotes: product.fieldNotes || "",
           retailNotes: product.retailNotes || "",
           washInventory: product.washInventory || "",
@@ -173,38 +182,32 @@ export default function EnhancedReportsPage() {
         });
       });
 
-    // Create a map to track all wash inventory changes by product
-    const productChanges = new Map<number, { added: number, removed: number }>();
+    // First, sort the history entries by timestamp (oldest first)
+    const sortedHistory = [...filteredHistory].sort((a, b) => 
+      new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+    );
     
     // Process history entries - Only count entries related to Wash Inventory
-    filteredHistory.forEach((entry: HistoryEntry) => {
+    // We'll go through each entry and track the changes
+    sortedHistory.forEach((entry: HistoryEntry) => {
       // Only process entries that are related to Wash Inventory
       if (entry.fieldLocation && entry.fieldLocation.includes('Wash Inventory')) {
-        // Initialize if not already present
-        if (!productChanges.has(entry.productId)) {
-          productChanges.set(entry.productId, { added: 0, removed: 0 });
-        }
-        
-        const changes = productChanges.get(entry.productId)!;
-        
-        // Track all changes
-        if (entry.change > 0) {
-          changes.added += entry.change;
-        } else if (entry.change < 0) {
-          changes.removed += Math.abs(entry.change);
+        const product = productSummary.get(entry.productId);
+        if (product) {
+          // Record each change
+          if (entry.change > 0) {
+            product.added += entry.change;
+          } else if (entry.change < 0) {
+            product.removed += Math.abs(entry.change);
+          }
         }
       }
     });
     
-    // Apply changes to product summary
-    productChanges.forEach((changes, productId) => {
-      const product = productSummary.get(productId);
-      if (product) {
-        product.added = changes.added;
-        product.removed = changes.removed;
-        // Calculate starting inventory based on current and changes
-        product.starting = product.current - product.added + product.removed;
-      }
+    // Now calculate the starting inventory by working backward
+    productSummary.forEach(product => {
+      // Starting = Current - Added + Removed
+      product.starting = product.current - product.added + product.removed;
     });
 
     let reportData = Array.from(productSummary.values());

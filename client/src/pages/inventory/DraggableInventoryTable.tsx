@@ -259,10 +259,10 @@ export default function DraggableInventoryTable({ products, onViewDetails, onOrd
                     {renderNumericField(product, "washInventory")}
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap text-sm">
-                    {renderNumericField(product, "harvestBins")}
+                    {renderEditableTextField(product, "harvestBins")}
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap text-sm">
-                    {renderNumericField(product, "unitsHarvested")}
+                    {renderEditableTextField(product, "unitsHarvested")}
                   </td>
                   <td className="px-4 py-3 text-sm max-w-[200px]">
                     {renderEditableTextField(product, "fieldNotes")}

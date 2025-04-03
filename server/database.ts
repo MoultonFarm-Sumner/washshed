@@ -26,8 +26,13 @@ export async function initializeDatabase() {
         name TEXT NOT NULL,
         field_location TEXT NOT NULL,
         current_stock INTEGER NOT NULL DEFAULT 0,
-        unit TEXT NOT NULL,
-        production_notes TEXT,
+        unit TEXT,
+        crop_needs TEXT,
+        stand_inventory TEXT,
+        wash_inventory TEXT,
+        harvest_bins TEXT,
+        units_harvested TEXT,
+        field_notes TEXT,
         retail_notes TEXT,
         image_url TEXT,
         date_added TIMESTAMP NOT NULL DEFAULT NOW()
@@ -42,6 +47,7 @@ export async function initializeDatabase() {
         previous_stock INTEGER NOT NULL,
         change INTEGER NOT NULL,
         new_stock INTEGER NOT NULL,
+        field_location TEXT,
         updated_by TEXT NOT NULL,
         timestamp TIMESTAMP NOT NULL DEFAULT NOW()
       )
@@ -57,11 +63,18 @@ export async function initializeDatabase() {
     
     // Insert default field locations if they don't exist
     const defaultLocations = [
-      'North Field',
-      'South Field',
-      'East Greenhouse',
-      'West Greenhouse',
-      'Hoop House'
+      'Stone Wall',
+      'Veg. Ridge',
+      'Upper Blais',
+      'Lower Blais',
+      'Side Hill 1',
+      'Side Hill 2',
+      'Side Hill 3',
+      'Rock Pile',
+      'Corn Ridge',
+      'Rt. 25',
+      'Hoisington',
+      'Dane'
     ];
     
     for (const location of defaultLocations) {

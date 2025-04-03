@@ -3,7 +3,7 @@ import {
   InventoryHistory, InsertInventoryHistory,
   FieldLocation, InsertFieldLocation,
   products, inventoryHistory, fieldLocations
-} from "@shared/schema";
+} from "../shared/schema";
 
 // Interface for storage operations
 export interface IStorage {
@@ -71,38 +71,58 @@ export class MemStorage implements IStorage {
     const defaultProducts: InsertProduct[] = [
       {
         name: "Carrots",
-        fieldLocation: "North Field",
+        fieldLocation: "Lower Blais",
         currentStock: 32,
         unit: "bunches",
-        productionNotes: "Planted March 15. Organic cultivation methods applied. Needs frequent watering during dry periods.",
-        retailNotes: "Sweet orange variety. Popular with regular customers. Package in bunches with tops intact. Keep refrigerated for display.",
+        cropNeeds: "60",
+        standInventory: "1",
+        washInventory: "1",
+        harvestBins: "1",
+        unitsHarvested: "20",
+        fieldNotes: "Planted March 15. Organic cultivation methods applied.",
+        retailNotes: "Sweet orange variety. Popular with regular customers. Keep refrigerated.",
         imageUrl: "https://images.unsplash.com/photo-1589927986089-35812388d1f4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=80&h=80&q=80"
       },
       {
-        name: "Tomatoes",
-        fieldLocation: "Greenhouse",
+        name: "Arugula",
+        fieldLocation: "Stone Wall",
         currentStock: 8,
-        unit: "lbs",
-        productionNotes: "Started in greenhouse Feb 1. Transplanted April 15. Staked and pruned regularly.",
-        retailNotes: "Heirloom variety. Keep at room temperature, not refrigerated. Very popular at weekend markets.",
+        unit: "",
+        cropNeeds: "60",
+        standInventory: "1",
+        washInventory: "1",
+        harvestBins: "1",
+        unitsHarvested: "20",
+        fieldNotes: "Date Range: Thurs-Fri",
+        retailNotes: "Popular at weekend markets.",
         imageUrl: "https://images.unsplash.com/photo-1566842600175-97dca3a750e3?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=80&h=80&q=80"
       },
       {
-        name: "Lettuce",
-        fieldLocation: "East Field",
+        name: "Green Leaf",
+        fieldLocation: "Upper Blais",
         currentStock: 3,
-        unit: "heads",
-        productionNotes: "Succession planted every 2 weeks. Shade cloth used during hot periods.",
-        retailNotes: "Green leaf variety. Very popular. Harvest day of or day before market.",
+        unit: "",
+        cropNeeds: "15",
+        standInventory: "",
+        washInventory: "",
+        harvestBins: "",
+        unitsHarvested: "",
+        fieldNotes: "Succession planted every 2 weeks.",
+        retailNotes: "Very popular. Harvest day of or day before market.",
         imageUrl: "https://images.unsplash.com/photo-1615485290382-441e4d049cb5?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=80&h=80&q=80"
       },
       {
-        name: "Beets",
-        fieldLocation: "South Field",
+        name: "Spinach",
+        fieldLocation: "Side Hill 3",
         currentStock: 24,
-        unit: "bunches",
-        productionNotes: "Direct seeded April 1. Thinned to 3 inches apart.",
-        retailNotes: "Mixed red and golden beets. Sell with tops when fresh, without tops when older.",
+        unit: "",
+        cropNeeds: "40",
+        standInventory: "",
+        washInventory: "",
+        harvestBins: "",
+        unitsHarvested: "",
+        fieldNotes: "Direct seeded April 1.",
+        retailNotes: "Keep refrigerated for display.",
         imageUrl: "https://images.unsplash.com/photo-1591070883261-0ea4973cc61b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=80&h=80&q=80"
       }
     ];
@@ -126,6 +146,7 @@ export class MemStorage implements IStorage {
         previousStock: 0,
         change: product.currentStock,
         newStock: product.currentStock,
+        fieldLocation: product.fieldLocation,
         updatedBy: "Farm Admin"
       };
       this.createInventoryHistory(historyEntry);
@@ -217,5 +238,8 @@ export class MemStorage implements IStorage {
   }
 }
 
-// Export a singleton instance
-export const storage = new MemStorage();
+// Use PgStorage from pg-storage.ts
+import { PgStorage } from './pg-storage';
+
+// Export a singleton instance of PgStorage for persistent database storage
+export const storage = new PgStorage();

@@ -76,7 +76,6 @@ export default function AddProductModal({
         name: values.name,
         fieldLocation: values.fieldLocation,
         currentStock: values.currentStock,
-        dateAdded: new Date().toISOString(),
         fieldNotes: "",
         retailNotes: "",
         cropNeeds: "",

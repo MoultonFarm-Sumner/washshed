@@ -1,11 +1,18 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Product } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Minus } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface Props {
   products: Product[];
@@ -15,6 +22,12 @@ interface Props {
 export default function InventoryTable({ products, onViewDetails }: Props) {
   const { toast } = useToast();
   const [editableValues, setEditableValues] = useState<{ [key: string]: any }>({});
+  
+  // Fetch field locations for dropdown
+  const { data: fieldLocations = [] } = useQuery<string[]>({
+    queryKey: ["/api/field-locations"],
+    select: (data) => data.map((location: any) => location.name),
+  });
   
   // Mutation for updating a product field
   const { mutate: updateProduct } = useMutation({
@@ -134,6 +147,38 @@ export default function InventoryTable({ products, onViewDetails }: Props) {
     );
   };
 
+  // Render the field location dropdown
+  const renderFieldLocationDropdown = (product: Product) => {
+    const value = getDisplayValue(product, "fieldLocation");
+    
+    return (
+      <div onClick={(e: React.MouseEvent) => e.stopPropagation()}>
+        <Select
+          defaultValue={value}
+          onValueChange={(newValue) => {
+            handleFieldChange(product.id, "fieldLocation", newValue);
+            updateProduct({
+              id: product.id,
+              field: "fieldLocation",
+              value: newValue
+            });
+          }}
+        >
+          <SelectTrigger className="h-7 w-full">
+            <SelectValue placeholder="Select location" />
+          </SelectTrigger>
+          <SelectContent>
+            {fieldLocations.map((location) => (
+              <SelectItem key={location} value={location}>
+                {location}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+    );
+  };
+
   // Render an editable text field
   const renderEditableTextField = (product: Product, field: string) => {
     const value = getDisplayValue(product, field);
@@ -194,7 +239,7 @@ export default function InventoryTable({ products, onViewDetails }: Props) {
               onClick={() => onViewDetails(product)}
             >
               <td className="px-4 py-3 whitespace-nowrap text-sm">
-                {renderEditableTextField(product, "fieldLocation")}
+                {renderFieldLocationDropdown(product)}
               </td>
               <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-800">
                 {product.name}

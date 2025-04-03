@@ -3,6 +3,9 @@ import { Plus, Minus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Product } from "@shared/schema";
+import { useMutation } from "@tanstack/react-query";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 interface WholesaleKitchenTabProps {
   products: Product[];
@@ -10,9 +13,32 @@ interface WholesaleKitchenTabProps {
 }
 
 export default function WholesaleKitchenTab({ products, onViewDetails }: WholesaleKitchenTabProps) {
+  const { toast } = useToast();
   // State to store the counts for each product
   const [wholesaleCounts, setWholesaleCounts] = useState<Record<number, number>>({});
   const [kitchenCounts, setKitchenCounts] = useState<Record<number, number>>({});
+
+  // Mutation for adjusting inventory and creating history
+  const { mutate: adjustInventory, isPending } = useMutation({
+    mutationFn: (params: { productId: number, change: number, location: 'Wholesale' | 'Kitchen' }) => {
+      return apiRequest("POST", "/api/inventory/adjust", {
+        productId: params.productId,
+        change: params.change,
+        updatedBy: `${params.location} Update`,
+        fieldLocation: params.location // Include the location in history
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/inventory/history"] });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to update inventory",
+        variant: "destructive",
+      });
+    }
+  });
 
   // Load counts from localStorage on mount
   useEffect(() => {
@@ -39,18 +65,46 @@ export default function WholesaleKitchenTab({ products, onViewDetails }: Wholesa
 
   // Helper to update wholesale count
   const updateWholesaleCount = (productId: number, value: number) => {
+    if (isPending) return;
+    
+    const currentValue = wholesaleCounts[productId] || 0;
     // Don't allow negative values
     const newValue = Math.max(0, value);
-    setWholesaleCounts(prev => ({ ...prev, [productId]: newValue }));
-    localStorage.setItem(`wholesale-${productId}`, newValue.toString());
+    const change = newValue - currentValue;
+    
+    if (change !== 0) {
+      setWholesaleCounts(prev => ({ ...prev, [productId]: newValue }));
+      localStorage.setItem(`wholesale-${productId}`, newValue.toString());
+      
+      // Record the change in inventory history
+      adjustInventory({ 
+        productId, 
+        change,
+        location: 'Wholesale'
+      });
+    }
   };
 
   // Helper to update kitchen count
   const updateKitchenCount = (productId: number, value: number) => {
+    if (isPending) return;
+    
+    const currentValue = kitchenCounts[productId] || 0;
     // Don't allow negative values
     const newValue = Math.max(0, value);
-    setKitchenCounts(prev => ({ ...prev, [productId]: newValue }));
-    localStorage.setItem(`kitchen-${productId}`, newValue.toString());
+    const change = newValue - currentValue;
+    
+    if (change !== 0) {
+      setKitchenCounts(prev => ({ ...prev, [productId]: newValue }));
+      localStorage.setItem(`kitchen-${productId}`, newValue.toString());
+      
+      // Record the change in inventory history
+      adjustInventory({ 
+        productId, 
+        change,
+        location: 'Kitchen'
+      });
+    }
   };
 
   return (

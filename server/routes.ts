@@ -128,10 +128,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const schema = z.object({
         productId: z.number(),
         change: z.number(),
-        updatedBy: z.string().default("Farm Admin")
+        updatedBy: z.string().default("Farm Admin"),
+        fieldLocation: z.string().optional() // Optional custom field location
       });
       
-      const { productId, change, updatedBy } = schema.parse(req.body);
+      const { productId, change, updatedBy, fieldLocation } = schema.parse(req.body);
       
       const product = await storage.getProduct(productId);
       if (!product) {
@@ -146,13 +147,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         currentStock: newStock
       });
       
-      // Create history record with current field location
+      // Create history record with specified field location or default to product's location
       const history = await storage.createInventoryHistory({
         productId,
         previousStock,
         change,
         newStock,
-        fieldLocation: product.fieldLocation, // Store current field location in history
+        fieldLocation: fieldLocation || product.fieldLocation, // Use provided location or default to product location
         updatedBy
       });
       

@@ -6,25 +6,36 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { Filter } from "lucide-react";
 import type { HistoryEntry } from "@/types";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export default function HistoryPage() {
   const { toast } = useToast();
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
   const [page, setPage] = useState(1);
+  const [includeWholesaleKitchen, setIncludeWholesaleKitchen] = useState(false);
   const pageSize = 10;
 
   // Format dates for API request
   const formattedStartDate = startDate ? new Date(startDate).toISOString() : undefined;
   const formattedEndDate = endDate ? new Date(endDate).toISOString() : undefined;
 
-  // Construct the query key with date parameters if available
-  const queryKey = [
-    "/api/inventory/history",
-    ...(formattedStartDate && formattedEndDate
-      ? [`?startDate=${formattedStartDate}&endDate=${formattedEndDate}`]
-      : [""]),
-  ];
+  // Construct the query parameters
+  const queryParams = new URLSearchParams();
+  
+  if (formattedStartDate && formattedEndDate) {
+    queryParams.append('startDate', formattedStartDate);
+    queryParams.append('endDate', formattedEndDate);
+  }
+  
+  if (includeWholesaleKitchen) {
+    queryParams.append('includeWholesaleKitchen', 'true');
+  }
+  
+  const queryString = queryParams.toString() ? `?${queryParams.toString()}` : '';
+
+  // Construct the query key with parameters
+  const queryKey = ["/api/inventory/history", queryString];
 
   // Fetch inventory history data
   const {
@@ -96,6 +107,23 @@ export default function HistoryPage() {
               onChange={(e) => setEndDate(e.target.value)}
               className="w-auto"
             />
+          </div>
+          <div className="flex items-center space-x-2">
+            <Checkbox 
+              id="includeWK" 
+              checked={includeWholesaleKitchen}
+              onCheckedChange={(checked) => {
+                setIncludeWholesaleKitchen(checked as boolean);
+                // Reset to page 1 when filter changes
+                setPage(1);
+              }}
+            />
+            <label
+              htmlFor="includeWK"
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              Include Wholesale/Kitchen
+            </label>
           </div>
           <Button
             className="bg-blue-600 hover:bg-blue-700"

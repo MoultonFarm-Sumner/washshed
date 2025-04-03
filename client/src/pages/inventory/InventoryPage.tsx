@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import DraggableInventoryTable from "./DraggableInventoryTable";
+import InventoryTable from "./InventoryTable";
 import ProductDetailsModal from "./ProductDetailsModal";
 import { Product } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -103,11 +103,7 @@ export default function InventoryPage() {
     }
   });
 
-  // Handle product reordering via drag and drop
-  const handleProductsReordered = (reorderedProducts: Product[]) => {
-    // This would update the order in the database
-    updateProductsOrder(reorderedProducts);
-  };
+  // No longer needed for reordering
 
   // Filter products based on search term and field location
   const filteredProducts = products.filter((product) => {
@@ -210,10 +206,9 @@ export default function InventoryPage() {
             </CardHeader>
             <CardContent>
               <div className="bg-white rounded-lg">
-                <DraggableInventoryTable 
+                <InventoryTable 
                   products={filteredProducts.filter(p => !["Wholesale", "Kitchen"].includes(p.fieldLocation))} 
                   onViewDetails={handleViewProductDetails}
-                  onOrderChanged={handleProductsReordered}
                 />
               </div>
             </CardContent>
@@ -247,6 +242,9 @@ export default function InventoryPage() {
                       </th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Retail Notes
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Field Notes
                       </th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Actions
@@ -452,6 +450,9 @@ export default function InventoryPage() {
                             
                             <td className="px-4 py-3 text-sm text-gray-900 max-w-xs truncate">
                               {product.retailNotes || "No retail notes"}
+                            </td>
+                            <td className="px-4 py-3 text-sm text-gray-900 max-w-xs truncate">
+                              {product.fieldNotes || "No field notes"}
                             </td>
                             <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">
                               <Button

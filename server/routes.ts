@@ -84,12 +84,81 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid product ID" });
       }
       
+      // Get current product data
+      const currentProduct = await storage.getProduct(id);
+      if (!currentProduct) {
+        return res.status(404).json({ message: "Product not found" });
+      }
+      
       // Allow partial updates
       const validatedData = insertProductSchema.partial().parse(req.body);
       
+      // Detect stock changes for history tracking
+      const hasStockChange = validatedData.currentStock !== undefined && 
+                           validatedData.currentStock !== currentProduct.currentStock;
+      
+      // Keep track of previous stock for history
+      const previousStock = currentProduct.currentStock;
+      
+      // Update the product
       const updatedProduct = await storage.updateProduct(id, validatedData);
-      if (!updatedProduct) {
-        return res.status(404).json({ message: "Product not found" });
+      
+      // Create history entry if currentStock changed
+      if (hasStockChange && updatedProduct) {
+        const stockChange = (validatedData.currentStock || 0) - previousStock;
+        
+        // Record the inventory change
+        await storage.createInventoryHistory({
+          productId: id,
+          previousStock,
+          change: stockChange,
+          newStock: validatedData.currentStock || 0,
+          fieldLocation: currentProduct.fieldLocation,
+          updatedBy: "Farm Admin" // TODO: Use actual user when authentication is implemented
+        });
+      }
+      
+      // Track inventory field changes for other commonly modified fields
+      const fieldKeysToTrack = ['washInventory', 'standInventory', 'harvestBins', 'unitsHarvested', 'cropNeeds'];
+      
+      for (const field of fieldKeysToTrack) {
+        if (field in validatedData && validatedData[field] !== currentProduct[field]) {
+          const oldValue = currentProduct[field] || "0";
+          const newValue = validatedData[field] || "0";
+          
+          // Try to convert to numbers for numerical fields
+          const numOldVal = parseInt(oldValue);
+          const numNewVal = parseInt(newValue);
+          
+          // Only create history if this is a numerical change
+          if (!isNaN(numOldVal) && !isNaN(numNewVal) && numOldVal !== numNewVal) {
+            // Record the change as an inventory event
+            await storage.createInventoryHistory({
+              productId: id,
+              previousStock: numOldVal,
+              change: numNewVal - numOldVal,
+              newStock: numNewVal,
+              fieldLocation: currentProduct.fieldLocation,
+              updatedBy: "Farm Admin"
+            });
+          }
+        }
+      }
+      
+      // Check if retail notes were updated and send notification if needed
+      const settings = emailSettings.getSettings();
+      if (
+        updatedProduct &&
+        settings.notifyOnRetailNotes && 
+        settings.notificationEmail && 
+        'retailNotes' in validatedData && 
+        validatedData.retailNotes !== currentProduct.retailNotes
+      ) {
+        // Send notification about retail notes update
+        await emailSettings.sendEmailNotification(
+          `Retail Notes Updated for ${updatedProduct.name}`,
+          `Retail notes have been updated for ${updatedProduct.name}.\n\nPrevious notes: ${currentProduct.retailNotes || 'None'}\n\nNew notes: ${validatedData.retailNotes || 'None'}`
+        );
       }
       
       res.json(updatedProduct);
@@ -352,51 +421,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Retail notes notification
-  app.put("/api/products/:id", async (req: Request, res: Response) => {
-    try {
-      const id = parseInt(req.params.id);
-      if (isNaN(id)) {
-        return res.status(400).json({ message: "Invalid product ID" });
-      }
-      
-      // Allow partial updates
-      const validatedData = insertProductSchema.partial().parse(req.body);
-      
-      const oldProduct = await storage.getProduct(id);
-      if (!oldProduct) {
-        return res.status(404).json({ message: "Product not found" });
-      }
-
-      const updatedProduct = await storage.updateProduct(id, validatedData);
-      
-      // Check if retail notes were updated and send notification if needed
-      const settings = emailSettings.getSettings();
-      if (
-        updatedProduct &&
-        settings.notifyOnRetailNotes && 
-        settings.notificationEmail && 
-        'retailNotes' in validatedData && 
-        validatedData.retailNotes !== oldProduct.retailNotes
-      ) {
-        // Send notification about retail notes update
-        await emailSettings.sendEmailNotification(
-          `Retail Notes Updated for ${updatedProduct.name}`,
-          `Retail notes have been updated for ${updatedProduct.name}.\n\nPrevious notes: ${oldProduct.retailNotes || 'None'}\n\nNew notes: ${validatedData.retailNotes || 'None'}`
-        );
-      }
-      
-      res.json(updatedProduct);
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({ 
-          message: "Invalid product data", 
-          errors: error.errors 
-        });
-      }
-      res.status(500).json({ message: "Failed to update product" });
-    }
-  });
+  // This route handler has been merged with the one above
 
   // Create HTTP server
   const httpServer = createServer(app);

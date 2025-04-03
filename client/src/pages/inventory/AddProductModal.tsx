@@ -190,7 +190,7 @@ export default function AddProductModal({
               </Button>
               <Button 
                 type="submit"
-                className="bg-primary hover:bg-green-800" 
+                className="bg-green-600 hover:bg-green-700 text-white" 
                 disabled={isPending}
               >
                 {isPending ? (

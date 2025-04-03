@@ -202,7 +202,7 @@ export default function ProductDetailsModal({
         {/* Current Stock field has been removed as requested, using Wash Inventory instead */}
 
         <Button 
-          className="w-full bg-primary hover:bg-green-800"
+          className="w-full bg-green-600 hover:bg-green-700 text-white"
           onClick={handleSave}
           disabled={isPending}
         >

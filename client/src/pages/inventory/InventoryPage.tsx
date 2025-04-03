@@ -152,7 +152,10 @@ export default function InventoryPage() {
             Manage your farm inventory across all locations
           </p>
         </div>
-        <Button onClick={() => setIsAddModalOpen(true)} className="bg-primary hover:bg-green-800">
+        <Button 
+          onClick={() => setIsAddModalOpen(true)} 
+          className="bg-green-600 hover:bg-green-700 text-white"
+        >
           <Plus className="mr-1 h-4 w-4" /> Add New Crop
         </Button>
       </div>

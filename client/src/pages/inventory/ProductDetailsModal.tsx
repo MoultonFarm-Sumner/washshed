@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
-import { Product } from "@shared/schema";
+import { Product, FieldLocation } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
 import {
   Dialog,
@@ -44,7 +44,13 @@ export default function ProductDetailsModal({
   const [harvestBins, setHarvestBins] = useState(product.harvestBins || "");
   const [unitsHarvested, setUnitsHarvested] = useState(product.unitsHarvested || "");
   const [currentStock, setCurrentStock] = useState(product.currentStock);
-  const [unit, setUnit] = useState(product.unit);
+  const [unit, setUnit] = useState<string>(product.unit || "each");
+  const [fieldLocation, setFieldLocation] = useState(product.fieldLocation);
+  
+  // Fetch field locations for dropdown
+  const { data: fieldLocations = [] } = useQuery<FieldLocation[]>({
+    queryKey: ['/api/field-locations'],
+  });
 
   const { mutate: updateProduct, isPending } = useMutation({
     mutationFn: (updatedProduct: Partial<Product>) => {
@@ -86,7 +92,8 @@ export default function ProductDetailsModal({
       harvestBins,
       unitsHarvested,
       currentStock,
-      unit
+      unit,
+      fieldLocation
     });
   };
 
@@ -98,16 +105,24 @@ export default function ProductDetailsModal({
         </DialogHeader>
         <div className="flex items-center mb-4">
           <img
-            src={product.imageUrl || "https://via.placeholder.com/120"}
+            src={"https://via.placeholder.com/120"}
             alt={product.name}
             className="w-24 h-24 object-cover rounded-lg mr-4"
           />
-          <div>
+          <div className="flex-1">
             <p className="text-sm text-gray-600 mb-1">Field Location</p>
-            <div className="flex items-center">
-              <MapPin className="h-4 w-4 text-gray-500 mr-1" />
-              <span>{product.fieldLocation}</span>
-            </div>
+            <Select value={fieldLocation} onValueChange={setFieldLocation}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select field location" />
+              </SelectTrigger>
+              <SelectContent>
+                {fieldLocations.map((location: FieldLocation) => (
+                  <SelectItem key={location.id} value={location.name}>
+                    {location.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
 

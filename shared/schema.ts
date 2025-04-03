@@ -8,7 +8,7 @@ export const products = pgTable("products", {
   name: text("name").notNull(),
   fieldLocation: text("field_location").notNull(),
   currentStock: integer("current_stock").notNull().default(0),
-  unit: text("unit").notNull(),
+  unit: text("unit"),  // Making unit optional
   cropNeeds: text("crop_needs"),
   standInventory: text("stand_inventory"),
   washInventory: text("wash_inventory"),
@@ -27,6 +27,7 @@ export const inventoryHistory = pgTable("inventory_history", {
   previousStock: integer("previous_stock").notNull(),
   change: integer("change").notNull(),
   newStock: integer("new_stock").notNull(),
+  fieldLocation: text("field_location"),
   updatedBy: text("updated_by").notNull(),
   timestamp: timestamp("timestamp").notNull().defaultNow(),
 });
@@ -69,7 +70,7 @@ export const productFormSchema = insertProductSchema.extend({
   name: z.string().min(2, "Name must be at least 2 characters"),
   fieldLocation: z.string().min(1, "Field location is required"),
   currentStock: z.number().min(0, "Stock cannot be negative"),
-  unit: z.string().min(1, "Unit is required"),
+  unit: z.string().optional(),  // Unit is now optional
   cropNeeds: z.string().optional(),
   standInventory: z.string().optional(),
   washInventory: z.string().optional(),

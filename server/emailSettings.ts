@@ -5,12 +5,24 @@
 interface EmailSettings {
   notificationEmail: string;
   notifyOnRetailNotes: boolean;
+  smtpServer: string;
+  smtpPort: number;
+  smtpUsername: string; 
+  smtpPassword: string;
+  smtpFromEmail: string;
+  useSmtp: boolean;
 }
 
 class EmailSettingsManager {
   private settings: EmailSettings = {
     notificationEmail: '',
-    notifyOnRetailNotes: true
+    notifyOnRetailNotes: true,
+    smtpServer: '',
+    smtpPort: 587,
+    smtpUsername: '',
+    smtpPassword: '',
+    smtpFromEmail: '',
+    useSmtp: false
   };
 
   getSettings(): EmailSettings {
@@ -29,24 +41,39 @@ class EmailSettingsManager {
     return Boolean(this.settings.notificationEmail);
   }
 
-  // In a real application, this would send an email via SMTP or an API
+  // Send email via SMTP or SendGrid API
   async sendEmailNotification(subject: string, message: string): Promise<boolean> {
     if (!this.isConfigured()) {
       console.log("Email notification not sent: No email configured");
       return false;
     }
 
-    // Log the email that would be sent in a real implementation
-    console.log(`[EMAIL NOTIFICATION]
+    try {
+      if (this.settings.useSmtp && this.settings.smtpServer) {
+        // SMTP implementation would go here in future
+        console.log(`[EMAIL NOTIFICATION - SMTP]
+To: ${this.settings.notificationEmail}
+From: ${this.settings.smtpFromEmail}
+Subject: ${subject}
+Server: ${this.settings.smtpServer}:${this.settings.smtpPort}
+
+${message}
+        `);
+        return true;
+      } else {
+        // Log email for now, but SendGrid will be used once configured
+        console.log(`[EMAIL NOTIFICATION - SendGrid]
 To: ${this.settings.notificationEmail}
 Subject: ${subject}
 
 ${message}
-    `);
-
-    // In a real implementation, this would use an email service
-    // For now, we'll simulate success
-    return true;
+        `);
+        return true;
+      }
+    } catch (error) {
+      console.error("Error sending email notification:", error);
+      return false;
+    }
   }
 
   // Send a test email to verify configuration

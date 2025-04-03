@@ -138,12 +138,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         currentStock: newStock
       });
       
-      // Create history record
+      // Create history record with current field location
       const history = await storage.createInventoryHistory({
         productId,
         previousStock,
         change,
         newStock,
+        fieldLocation: product.fieldLocation, // Store current field location in history
         updatedBy
       });
       
@@ -193,7 +194,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const enrichedHistory = history.map(entry => ({
         ...entry,
         productName: productMap.get(entry.productId)?.name || 'Unknown Product',
-        fieldLocation: productMap.get(entry.productId)?.fieldLocation || 'Unknown Location',
+        // Use field location stored in history if available, otherwise use current product location
+        fieldLocation: entry.fieldLocation || productMap.get(entry.productId)?.fieldLocation || 'Unknown Location',
         unit: productMap.get(entry.productId)?.unit || ''
       }));
       
@@ -261,14 +263,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const schema = z.object({
         email: z.string().email(),
-        notifyOnRetailNotes: z.boolean().default(true)
+        notifyOnRetailNotes: z.boolean().default(true),
+        useSmtp: z.boolean().optional(),
+        smtpServer: z.string().optional(),
+        smtpPort: z.number().int().min(1).max(65535).optional(),
+        smtpUsername: z.string().optional(),
+        smtpPassword: z.string().optional(),
+        smtpFromEmail: z.string().email().optional()
       });
       
-      const { email, notifyOnRetailNotes } = schema.parse(req.body);
+      const { 
+        email, 
+        notifyOnRetailNotes, 
+        useSmtp, 
+        smtpServer, 
+        smtpPort, 
+        smtpUsername, 
+        smtpPassword, 
+        smtpFromEmail 
+      } = schema.parse(req.body);
       
       const settings = emailSettings.updateSettings({
         notificationEmail: email,
-        notifyOnRetailNotes
+        notifyOnRetailNotes,
+        ...(useSmtp !== undefined && { useSmtp }),
+        ...(smtpServer !== undefined && { smtpServer }),
+        ...(smtpPort !== undefined && { smtpPort }),
+        ...(smtpUsername !== undefined && { smtpUsername }),
+        ...(smtpPassword !== undefined && { smtpPassword }),
+        ...(smtpFromEmail !== undefined && { smtpFromEmail })
       });
       
       res.json(settings);

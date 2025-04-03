@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -8,7 +8,20 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Mail } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import { Mail, Server } from "lucide-react";
+
+// Email settings interface
+interface EmailSettings {
+  notificationEmail: string;
+  notifyOnRetailNotes: boolean;
+  smtpServer: string;
+  smtpPort: number;
+  smtpUsername: string;
+  smtpPassword: string;
+  smtpFromEmail: string;
+  useSmtp: boolean;
+}
 
 export default function SettingsPage() {
   const { toast } = useToast();
@@ -17,10 +30,37 @@ export default function SettingsPage() {
   const [notifyOnRetailNotes, setNotifyOnRetailNotes] = useState(true);
   const [notificationEmail, setNotificationEmail] = useState("");
   const [isTestingSendgrid, setIsTestingSendgrid] = useState(false);
+  
+  // SMTP settings
+  const [useSmtp, setUseSmtp] = useState(false);
+  const [smtpServer, setSmtpServer] = useState("");
+  const [smtpPort, setSmtpPort] = useState(587);
+  const [smtpUsername, setSmtpUsername] = useState("");
+  const [smtpPassword, setSmtpPassword] = useState("");
+  const [smtpFromEmail, setSmtpFromEmail] = useState("");
+
+  // Fetch existing settings
+  const { data: settings } = useQuery<EmailSettings>({
+    queryKey: ['/api/settings/email']
+  });
+
+  // Update form state when settings are loaded
+  useEffect(() => {
+    if (settings) {
+      setNotificationEmail(settings.notificationEmail || "");
+      setNotifyOnRetailNotes(settings.notifyOnRetailNotes);
+      setUseSmtp(settings.useSmtp);
+      setSmtpServer(settings.smtpServer || "");
+      setSmtpPort(settings.smtpPort || 587);
+      setSmtpUsername(settings.smtpUsername || "");
+      setSmtpPassword(settings.smtpPassword || "");
+      setSmtpFromEmail(settings.smtpFromEmail || "");
+    }
+  }, [settings]);
 
   // Mutation for saving email settings
   const { mutate: saveEmailSettings, isPending: isSavingSettings } = useMutation({
-    mutationFn: (data: { email: string; notifyOnRetailNotes: boolean }) => {
+    mutationFn: (data: Partial<EmailSettings>) => {
       return apiRequest("POST", "/api/settings/email", data);
     },
     onSuccess: () => {
@@ -75,9 +115,37 @@ export default function SettingsPage() {
 
   const handleSaveSettings = () => {
     if (notificationEmail && /\S+@\S+\.\S+/.test(notificationEmail)) {
+      // Validate SMTP settings if SMTP is enabled
+      if (useSmtp) {
+        if (!smtpServer || !smtpFromEmail || !smtpUsername) {
+          toast({
+            title: "Missing SMTP Settings",
+            description: "Please fill in all required SMTP fields.",
+            variant: "destructive",
+          });
+          return;
+        }
+        
+        if (!/\S+@\S+\.\S+/.test(smtpFromEmail)) {
+          toast({
+            title: "Invalid SMTP From Email",
+            description: "Please enter a valid email address for the SMTP From field.",
+            variant: "destructive",
+          });
+          return;
+        }
+      }
+      
+      // Save all email settings including SMTP
       saveEmailSettings({
-        email: notificationEmail,
-        notifyOnRetailNotes: notifyOnRetailNotes,
+        notificationEmail: notificationEmail,
+        notifyOnRetailNotes,
+        useSmtp,
+        smtpServer,
+        smtpPort,
+        smtpUsername,
+        smtpPassword,
+        smtpFromEmail
       });
     } else {
       toast({
@@ -143,11 +211,95 @@ export default function SettingsPage() {
                   </p>
                 </div>
               </div>
+
+              <Separator className="my-4" />
+              
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-medium">Email Server (SMTP) Settings</h3>
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      id="use-smtp"
+                      checked={useSmtp}
+                      onCheckedChange={setUseSmtp}
+                    />
+                    <Label htmlFor="use-smtp">Use SMTP Server</Label>
+                  </div>
+                </div>
+                
+                {useSmtp && (
+                  <div className="space-y-4 p-4 border border-gray-200 rounded-md">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="smtp-server">SMTP Server</Label>
+                        <Input
+                          id="smtp-server"
+                          placeholder="smtp.example.com"
+                          value={smtpServer}
+                          onChange={(e) => setSmtpServer(e.target.value)}
+                        />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="smtp-port">SMTP Port</Label>
+                        <Input
+                          id="smtp-port"
+                          type="number"
+                          placeholder="587"
+                          value={smtpPort}
+                          onChange={(e) => setSmtpPort(parseInt(e.target.value) || 587)}
+                        />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="smtp-username">Username</Label>
+                        <Input
+                          id="smtp-username"
+                          placeholder="username"
+                          value={smtpUsername}
+                          onChange={(e) => setSmtpUsername(e.target.value)}
+                        />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="smtp-password">Password</Label>
+                        <Input
+                          id="smtp-password"
+                          type="password"
+                          placeholder="••••••••"
+                          value={smtpPassword}
+                          onChange={(e) => setSmtpPassword(e.target.value)}
+                        />
+                      </div>
+                      
+                      <div className="space-y-2 md:col-span-2">
+                        <Label htmlFor="smtp-from">From Email Address</Label>
+                        <Input
+                          id="smtp-from"
+                          type="email"
+                          placeholder="farm@example.com"
+                          value={smtpFromEmail}
+                          onChange={(e) => setSmtpFromEmail(e.target.value)}
+                        />
+                        <p className="text-sm text-gray-500">
+                          This address will appear as the sender of all notifications.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                {!useSmtp && (
+                  <p className="text-sm text-gray-500 italic">
+                    If you enable SMTP, you can use your own email server to send notifications instead of our default service.
+                  </p>
+                )}
+              </div>
             </CardContent>
             <CardFooter className="flex justify-end">
               <Button onClick={handleSaveSettings} disabled={isSavingSettings}>
                 <Mail className="mr-2 h-4 w-4" />
-                Save Notification Settings
+                Save Email Settings
               </Button>
             </CardFooter>
           </Card>

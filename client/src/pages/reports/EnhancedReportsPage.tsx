@@ -173,16 +173,35 @@ export default function EnhancedReportsPage() {
         });
       });
 
+    // Create a map to track all wash inventory changes by product
+    const productChanges = new Map<number, { added: number, removed: number }>();
+    
     // Process history entries - Only count entries related to Wash Inventory
     filteredHistory.forEach((entry: HistoryEntry) => {
-      const product = productSummary.get(entry.productId);
       // Only process entries that are related to Wash Inventory
-      if (product && entry.fieldLocation && entry.fieldLocation.includes('Wash Inventory')) {
-        if (entry.change > 0) {
-          product.added += entry.change;
-        } else {
-          product.removed += Math.abs(entry.change);
+      if (entry.fieldLocation && entry.fieldLocation.includes('Wash Inventory')) {
+        // Initialize if not already present
+        if (!productChanges.has(entry.productId)) {
+          productChanges.set(entry.productId, { added: 0, removed: 0 });
         }
+        
+        const changes = productChanges.get(entry.productId)!;
+        
+        // Track all changes
+        if (entry.change > 0) {
+          changes.added += entry.change;
+        } else if (entry.change < 0) {
+          changes.removed += Math.abs(entry.change);
+        }
+      }
+    });
+    
+    // Apply changes to product summary
+    productChanges.forEach((changes, productId) => {
+      const product = productSummary.get(productId);
+      if (product) {
+        product.added = changes.added;
+        product.removed = changes.removed;
         // Calculate starting inventory based on current and changes
         product.starting = product.current - product.added + product.removed;
       }

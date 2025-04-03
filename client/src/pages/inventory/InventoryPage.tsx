@@ -323,7 +323,15 @@ export default function InventoryPage() {
                                   className="w-16 h-7 px-1 text-center"
                                   value={wholesaleProduct.washInventory || "0"}
                                   onChange={(e) => {
-                                    // This would update the wash inventory in a real implementation
+                                    e.stopPropagation();
+                                    // Allow manual entry of values
+                                    if (wholesaleProduct.id !== 0) {
+                                      const newValue = e.target.value.replace(/[^0-9]/g, "");
+                                      updateProductMutation({
+                                        id: wholesaleProduct.id,
+                                        washInventory: newValue
+                                      });
+                                    }
                                   }}
                                   onClick={(e) => e.stopPropagation()}
                                   readOnly={wholesaleProduct.id === 0}
@@ -414,7 +422,15 @@ export default function InventoryPage() {
                                   className="w-16 h-7 px-1 text-center"
                                   value={kitchenProduct.washInventory || "0"}
                                   onChange={(e) => {
-                                    // This would update the wash inventory in a real implementation
+                                    e.stopPropagation();
+                                    // Allow manual entry of values
+                                    if (kitchenProduct.id !== 0) {
+                                      const newValue = e.target.value.replace(/[^0-9]/g, "");
+                                      updateProductMutation({
+                                        id: kitchenProduct.id,
+                                        washInventory: newValue
+                                      });
+                                    }
                                   }}
                                   onClick={(e) => e.stopPropagation()}
                                   readOnly={kitchenProduct.id === 0}

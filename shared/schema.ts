@@ -18,6 +18,9 @@ export const products = pgTable("products", {
   retailNotes: text("retail_notes"),
   imageUrl: text("image_url"),
   dateAdded: timestamp("date_added").notNull().defaultNow(),
+  showInWholesale: boolean("show_in_wholesale").notNull().default(false),
+  showInKitchen: boolean("show_in_kitchen").notNull().default(false),
+  showInRetail: boolean("show_in_retail").notNull().default(true),
 });
 
 // Inventory history model

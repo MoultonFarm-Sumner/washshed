@@ -147,7 +147,9 @@ export default function InventoryPage() {
       <Tabs defaultValue="field" className="w-full">
         <TabsList className="mb-4">
           <TabsTrigger value="field">Field Inventory</TabsTrigger>
-          <TabsTrigger value="retail">Retail/Kitchen</TabsTrigger>
+          <TabsTrigger value="retail">Retail</TabsTrigger>
+          <TabsTrigger value="wholesale">Wholesale</TabsTrigger>
+          <TabsTrigger value="kitchen">Kitchen</TabsTrigger>
         </TabsList>
 
         <TabsContent value="field" className="space-y-4">
@@ -163,9 +165,9 @@ export default function InventoryPage() {
         <TabsContent value="retail" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Retail &amp; Kitchen Inventory</CardTitle>
+              <CardTitle>Retail Inventory</CardTitle>
               <CardDescription>
-                View and manage inventory for retail and kitchen use
+                View and manage inventory for retail sales
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -183,10 +185,7 @@ export default function InventoryPage() {
                         Current Stock
                       </th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Status
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Field Notes
+                        Retail Notes
                       </th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Actions
@@ -194,7 +193,7 @@ export default function InventoryPage() {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {filteredProducts.map((product) => (
+                    {filteredProducts.filter(product => product.showInRetail !== false).map((product) => (
                       <tr 
                         key={product.id} 
                         className="hover:bg-gray-100 cursor-pointer"
@@ -209,10 +208,147 @@ export default function InventoryPage() {
                         <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
                           {product.currentStock}
                         </td>
-                        <td className="px-4 py-3 whitespace-nowrap">
-                          <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                            Active
-                          </span>
+                        <td className="px-4 py-3 text-sm text-gray-900 max-w-xs truncate">
+                          {product.retailNotes || "No notes"}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleViewProductDetails(product);
+                            }}
+                            className="text-xs"
+                          >
+                            Details
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="wholesale" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Wholesale Inventory</CardTitle>
+              <CardDescription>
+                View and manage inventory for wholesale operations
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Field Location
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Crop
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Current Stock
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Field Notes
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {filteredProducts.filter(product => product.showInWholesale === true).map((product) => (
+                      <tr 
+                        key={product.id} 
+                        className="hover:bg-gray-100 cursor-pointer"
+                        onClick={() => handleViewProductDetails(product)}
+                      >
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                          {product.fieldLocation}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
+                          {product.name}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                          {product.currentStock}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-gray-900 max-w-xs truncate">
+                          {product.fieldNotes || "No notes"}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleViewProductDetails(product);
+                            }}
+                            className="text-xs"
+                          >
+                            Details
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="kitchen" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Kitchen Inventory</CardTitle>
+              <CardDescription>
+                View and manage inventory for kitchen use
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Field Location
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Crop
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Current Stock
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Field Notes
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {filteredProducts.filter(product => product.showInKitchen === true).map((product) => (
+                      <tr 
+                        key={product.id} 
+                        className="hover:bg-gray-100 cursor-pointer"
+                        onClick={() => handleViewProductDetails(product)}
+                      >
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                          {product.fieldLocation}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
+                          {product.name}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                          {product.currentStock}
                         </td>
                         <td className="px-4 py-3 text-sm text-gray-900 max-w-xs truncate">
                           {product.fieldNotes || "No notes"}

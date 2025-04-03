@@ -9,6 +9,8 @@ import HistoryPage from "@/pages/history/HistoryPage";
 import ReportsPage from "@/pages/reports/ReportsPage";
 import ProductsPage from "@/pages/products/ProductsPage";
 import RetailOverviewPage from "@/pages/retail/RetailOverviewPage";
+import WholesalePage from "@/pages/wholesale/WholesalePage";
+import KitchenPage from "@/pages/kitchen/KitchenPage";
 import SettingsPage from "@/pages/settings/SettingsPage";
 import FieldLocationsPage from "@/pages/fields/FieldLocationsPage";
 import DataImportPage from "@/pages/fields/DataImportPage";
@@ -23,6 +25,8 @@ function Router() {
         <Route path="/reports" component={ReportsPage} />
         <Route path="/products" component={ProductsPage} />
         <Route path="/retail" component={RetailOverviewPage} />
+        <Route path="/wholesale" component={WholesalePage} />
+        <Route path="/kitchen" component={KitchenPage} />
         <Route path="/settings" component={SettingsPage} />
         <Route path="/fields" component={FieldLocationsPage} />
         <Route path="/fields/import" component={DataImportPage} />

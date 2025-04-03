@@ -85,16 +85,17 @@ export default function EnhancedReportsPage() {
     setEndDate(datePresets[preset].end);
   };
 
-  // Fetch products for filter dropdown
+  // Fetch products for filter dropdown - refetch every 5 seconds to get the latest updates
   const { data: products = [] } = useQuery<Product[]>({
     queryKey: ["/api/products"],
+    refetchInterval: 5000, // Refetch every 5 seconds to get latest changes
   });
 
   // Get unique field locations from products
   const fieldLocations = Array.from(
     new Set(products.map((product) => product.fieldLocation))
   )
-  .filter(location => location !== "Wholesale" && location !== "Kitchen")
+  .filter(location => location !== "Wholesale" && location !== "Kitchen" && location !== "")
   .sort();
 
   // Fetch inventory history with date filtering
@@ -454,14 +455,14 @@ export default function EnhancedReportsPage() {
                 <div>
                   <label className="text-sm font-medium mb-1 block">Filter by Field Location</label>
                   <Select 
-                    value={selectedFieldLocation || ""} 
-                    onValueChange={(value) => setSelectedFieldLocation(value || null)}
+                    value={selectedFieldLocation || "all"} 
+                    onValueChange={(value) => setSelectedFieldLocation(value === "all" ? null : value)}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select location" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All Locations</SelectItem>
+                      <SelectItem value="all">All Locations</SelectItem>
                       {fieldLocations.map((location) => (
                         <SelectItem key={location} value={location}>
                           {location}

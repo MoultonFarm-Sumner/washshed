@@ -70,12 +70,13 @@ export default function EnhancedHistoryPage() {
     queryKey,
   });
 
-  // Fetch products for filtering
+  // Fetch products for filtering with auto-refresh
   const { 
     data: products = [] as Product[],
     isLoading: productsLoading 
   } = useQuery<Product[]>({
     queryKey: ["/api/products"],
+    refetchInterval: 5000, // Refresh every 5 seconds to get latest data
   });
 
   // Get unique field locations from products
@@ -297,34 +298,34 @@ export default function EnhancedHistoryPage() {
               <label className="text-sm font-medium">Filter By</label>
               <div className="space-y-2">
                 <Select
-                  value={selectedProduct?.toString() || ""}
-                  onValueChange={(value) => setSelectedProduct(value ? parseInt(value) : null)}
+                  value={selectedProduct?.toString() || "all"}
+                  onValueChange={(value) => setSelectedProduct(value === "all" ? null : parseInt(value))}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select product" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Products</SelectItem>
+                    <SelectItem value="all">All Products</SelectItem>
                     {products.map((product) => (
                       <SelectItem key={product.id} value={product.id.toString()}>
-                        {product.name} ({product.fieldLocation})
+                        {product.name} ({product.fieldLocation || "No Location"})
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
                 
                 <Select
-                  value={selectedFieldLocation || ""}
-                  onValueChange={(value) => setSelectedFieldLocation(value || null)}
+                  value={selectedFieldLocation || "all"}
+                  onValueChange={(value) => setSelectedFieldLocation(value === "all" ? null : value)}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select field location" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Locations</SelectItem>
+                    <SelectItem value="all">All Locations</SelectItem>
                     {fieldLocations.map((location) => (
                       <SelectItem key={location} value={location}>
-                        {location}
+                        {location || "No Location"}
                       </SelectItem>
                     ))}
                   </SelectContent>

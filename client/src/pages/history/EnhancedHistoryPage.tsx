@@ -144,20 +144,33 @@ export default function EnhancedHistoryPage() {
         : "All time";
 
       // Create report items from history data
-      const reportItems = filteredByLocation.map(entry => ({
-        id: entry.id,
-        name: entry.productName,
-        fieldLocation: entry.fieldLocation,
-        unit: entry.unit,
-        starting: entry.previousStock,
-        added: entry.change > 0 ? entry.change : 0,
-        removed: entry.change < 0 ? Math.abs(entry.change) : 0,
-        current: entry.newStock,
-        isLowStock: false,
-        isCriticalStock: false,
-        updatedBy: entry.updatedBy,
-        timestamp: formatDateDisplay(entry.timestamp) + " " + formatTimeDisplay(entry.timestamp)
-      }));
+      const reportItems = filteredByLocation.map(entry => {
+        // Find the corresponding product to get extended fields
+        const product = products.find(p => p.id === entry.productId);
+        
+        return {
+          id: entry.id,
+          name: entry.productName,
+          fieldLocation: entry.fieldLocation,
+          unit: entry.unit,
+          starting: entry.previousStock,
+          added: entry.change > 0 ? entry.change : 0,
+          removed: entry.change < 0 ? Math.abs(entry.change) : 0,
+          current: entry.newStock,
+          isLowStock: false,
+          isCriticalStock: false,
+          updatedBy: entry.updatedBy,
+          timestamp: formatDateDisplay(entry.timestamp) + " " + formatTimeDisplay(entry.timestamp),
+          // Include extended fields from the product
+          washInventory: product?.washInventory || '',
+          standInventory: product?.standInventory || '',
+          harvestBins: product?.harvestBins || '',
+          cropNeeds: product?.cropNeeds || '',
+          unitsHarvested: product?.unitsHarvested || '',
+          fieldNotes: product?.fieldNotes || '',
+          retailNotes: product?.retailNotes || ''
+        };
+      });
 
       await generatePDF(title, dateRange, reportItems);
       
@@ -406,6 +419,9 @@ export default function EnhancedHistoryPage() {
                       New Total
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Wash Inventory
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Updated By
                     </th>
                   </tr>
@@ -435,6 +451,12 @@ export default function EnhancedHistoryPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
                         {entry.newStock} {entry.unit}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
+                        {(() => {
+                          const product = products.find(p => p.id === entry.productId);
+                          return product?.washInventory || '-';
+                        })()}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
                         {entry.updatedBy}

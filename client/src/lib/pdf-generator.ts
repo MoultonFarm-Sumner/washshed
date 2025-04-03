@@ -17,8 +17,10 @@ export async function generatePDF(
   reportType?: string,
   includeExtendedFields?: boolean
 ) {
-  // Create a new PDF document
-  const doc = new jsPDF();
+  console.log("Generating PDF report:", { title, dateRange, reportItems: reportData.length, reportType, includeExtendedFields });
+  try {
+    // Create a new PDF document
+    const doc = new jsPDF();
   
   // Add title
   doc.setFontSize(18);
@@ -255,4 +257,8 @@ export async function generatePDF(
   // Save the PDF with timestamp for traceability
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
   doc.save(`${title.replace(/\s+/g, '_')}_${timestamp}.pdf`);
+  } catch (error) {
+    console.error("Error generating PDF:", error);
+    throw error;
+  }
 }

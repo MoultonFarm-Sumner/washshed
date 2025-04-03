@@ -233,7 +233,7 @@ export default function ProductsPage() {
                     Field Location
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Current Stock
+                    Wash Inventory
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Unit
@@ -269,7 +269,7 @@ export default function ProductsPage() {
                       {product.fieldLocation}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
-                      {product.currentStock}
+                      {product.washInventory || "0"}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
                       {product.unit}

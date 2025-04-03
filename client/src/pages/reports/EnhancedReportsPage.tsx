@@ -173,10 +173,11 @@ export default function EnhancedReportsPage() {
         });
       });
 
-    // Process history entries
+    // Process history entries - Only count entries related to Wash Inventory
     filteredHistory.forEach((entry: HistoryEntry) => {
       const product = productSummary.get(entry.productId);
-      if (product) {
+      // Only process entries that are related to Wash Inventory
+      if (product && entry.fieldLocation && entry.fieldLocation.includes('Wash Inventory')) {
         if (entry.change > 0) {
           product.added += entry.change;
         } else {
@@ -255,9 +256,9 @@ export default function EnhancedReportsPage() {
       const headers = [
         "Field Location",
         "Crop",
-        "Starting Stock",
-        "Added",
-        "Removed",
+        "Starting Stock (Wash)",
+        "Added (Wash)",
+        "Removed (Wash)",
         "Current Stock (Wash)",
         "Units",
         "Low Stock",
@@ -774,7 +775,7 @@ export default function EnhancedReportsPage() {
                           <TableHead>Unit</TableHead>
                         )}
                         {selectedColumns.includes("changes") && (
-                          <TableHead>Changes</TableHead>
+                          <TableHead>Changes (Wash)</TableHead>
                         )}
                         {selectedColumns.includes("cropNeeds") && (
                           <TableHead>Crop Needs</TableHead>
@@ -904,14 +905,14 @@ export default function EnhancedReportsPage() {
                           {selectedColumns.includes("changes") && (
                             <>
                               <div className="text-center">
-                                <div className="text-sm text-gray-500">Added</div>
+                                <div className="text-sm text-gray-500">Added (Wash)</div>
                                 <div className="text-xl font-bold text-green-600">
                                   {product.added > 0 ? `+${product.added}` : "0"}
                                 </div>
                               </div>
                               
                               <div className="text-center">
-                                <div className="text-sm text-gray-500">Removed</div>
+                                <div className="text-sm text-gray-500">Removed (Wash)</div>
                                 <div className="text-xl font-bold text-red-600">
                                   {product.removed > 0 ? `-${product.removed}` : "0"}
                                 </div>

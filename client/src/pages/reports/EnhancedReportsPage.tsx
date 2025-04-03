@@ -671,8 +671,8 @@ export default function EnhancedReportsPage() {
                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                   Status
                                 </th>
-                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                  Wash Inventory
+                                <th className="px-4 py-3 text-left text-xs font-medium text-blue-600 uppercase tracking-wider bg-blue-50 font-semibold">
+                                  Wash Inventory (Stock)
                                 </th>
                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                   Field Notes
@@ -705,7 +705,7 @@ export default function EnhancedReportsPage() {
                                         </Badge>
                                       )}
                                     </td>
-                                    <td className="px-4 py-3 text-sm text-gray-800 max-w-[200px]">
+                                    <td className="px-4 py-3 text-sm text-gray-800 max-w-[200px] bg-blue-50 font-semibold">
                                       <div className="truncate" title={product.washInventory || "-"}>
                                         {product.washInventory || "-"}
                                       </div>
@@ -746,8 +746,8 @@ export default function EnhancedReportsPage() {
                               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Stand Inventory
                               </th>
-                              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Wash Inventory
+                              <th className="px-4 py-3 text-left text-xs font-medium text-blue-600 uppercase tracking-wider bg-blue-50 font-semibold">
+                                Wash Inventory (Stock)
                               </th>
                             </tr>
                           </thead>
@@ -780,7 +780,7 @@ export default function EnhancedReportsPage() {
                                     {product.standInventory || "-"}
                                   </div>
                                 </td>
-                                <td className="px-4 py-3 text-sm text-gray-800 max-w-[200px]">
+                                <td className="px-4 py-3 text-sm text-gray-800 max-w-[200px] bg-blue-50 font-semibold">
                                   <div className="truncate" title={product.washInventory || "-"}>
                                     {product.washInventory || "-"}
                                   </div>

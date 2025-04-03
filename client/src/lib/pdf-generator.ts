@@ -37,7 +37,7 @@ export async function generatePDF(
   doc.text("Inventory Changes", 14, 50);
   
   // Determine which columns to show based on report type and extended fields option
-  let inventoryColumns = ['Field Location', 'Crop', 'Current Stock', 'Units'];
+  let inventoryColumns = ['Field Location', 'Crop', 'Current Stock', 'Units', 'Wash Inventory (Stock)'];
   
   if (reportType === 'detailed' || includeExtendedFields) {
     inventoryColumns = [
@@ -48,7 +48,7 @@ export async function generatePDF(
       'Removed', 
       'Current Stock', 
       'Units', 
-      'Wash Inventory', 
+      'Wash Inventory (Stock)', 
       'Field Notes', 
       'Retail Notes'
     ];
@@ -96,7 +96,7 @@ export async function generatePDF(
     startY: 54,
     head: [reportType === 'detailed' || includeExtendedFields 
       ? inventoryColumns 
-      : ['Field Location', 'Crop', 'Current Stock', 'Units', 'Wash Inventory', 'Field Notes', 'Retail Notes']
+      : ['Field Location', 'Crop', 'Current Stock', 'Units', 'Wash Inventory (Stock)', 'Field Notes', 'Retail Notes']
     ],
     body: reportData.map(buildInventoryTableData),
     theme: 'grid',
@@ -108,9 +108,15 @@ export async function generatePDF(
     alternateRowStyles: {
       fillColor: [240, 240, 240]
     },
-    columnStyles: reportType === 'detailed' || includeExtendedFields
-      ? createColumnStyles(10)  // For detailed report with 10 columns
-      : createColumnStyles(7),  // For standard report with 7 columns
+    columnStyles: {
+      0: { cellWidth: 'auto' },
+      1: { cellWidth: 'auto' },
+      2: { cellWidth: 'auto' },
+      3: { cellWidth: 'auto' },
+      4: { cellWidth: 'auto', fillColor: [220, 240, 255] }, // Highlight wash inventory column
+      5: { cellWidth: 'auto' },
+      6: { cellWidth: 'auto' }
+    },
     styles: {
       overflow: 'linebreak',
       cellPadding: 4,
@@ -128,7 +134,7 @@ export async function generatePDF(
     
     (doc as any).autoTable({
       startY: lowStockY + 4,
-      head: [['Field Location', 'Crop', 'Current Stock', 'Units', 'Status', 'Wash Inventory', 'Field Notes', 'Retail Notes']],
+      head: [['Field Location', 'Crop', 'Current Stock', 'Units', 'Status', 'Wash Inventory (Stock)', 'Field Notes', 'Retail Notes']],
       body: lowStockItems.map(item => [
         item.fieldLocation,
         item.name,
@@ -158,7 +164,7 @@ export async function generatePDF(
             return [255, 160, 0]; // Yellow
           }
         },
-        5: { cellWidth: 'auto' },
+        5: { cellWidth: 'auto', fillColor: [220, 240, 255] }, // Highlight wash inventory column
         6: { cellWidth: 'auto' },
         7: { cellWidth: 'auto' }
       },

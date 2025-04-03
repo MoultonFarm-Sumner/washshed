@@ -418,8 +418,8 @@ export default function EnhancedHistoryPage() {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       New Total
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Wash Inventory
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-blue-50">
+                      Wash Inventory (Stock)
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Updated By
@@ -452,7 +452,7 @@ export default function EnhancedHistoryPage() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
                         {entry.newStock} {entry.unit}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold bg-blue-50">
                         {(() => {
                           const product = products.find(p => p.id === entry.productId);
                           return product?.washInventory || '-';

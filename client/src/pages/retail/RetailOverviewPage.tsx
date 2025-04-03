@@ -45,10 +45,10 @@ export default function RetailOverviewPage() {
     },
   });
 
-  // Filter products based on search query
-  const filteredProducts = products.filter((product) =>
-    product.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Filter products based on search query and sort alphabetically by name
+  const filteredProducts = products
+    .filter((product) => product.name.toLowerCase().includes(searchQuery.toLowerCase()))
+    .sort((a, b) => a.name.localeCompare(b.name));
 
   // Start editing notes for a product
   const startEditing = (productId: number, currentNotes: string = "") => {
@@ -112,76 +112,105 @@ export default function RetailOverviewPage() {
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredProducts.map((product) => (
-            <Card key={product.id} className="overflow-hidden">
-              <CardHeader className="bg-gray-50 pb-3">
-                <CardTitle className="text-lg">{product.name}</CardTitle>
-              </CardHeader>
-              <CardContent className="pt-4 space-y-4">
-                <div>
-                  <h3 className="text-sm font-medium text-gray-500 mb-1">Wash Inventory</h3>
-                  <p className="text-lg font-semibold">{product.washInventory || "0"} {product.unit}</p>
-                </div>
-
-                <div>
-                  <h3 className="text-sm font-medium text-gray-500 mb-1">Harvest Bins</h3>
-                  <p>{product.harvestBins || "None"}</p>
-                </div>
-
-                <div>
-                  <h3 className="text-sm font-medium text-gray-500 mb-1">Field Notes</h3>
-                  <p className="text-sm">{product.fieldNotes || "No field notes"}</p>
-                </div>
-
-                <div>
-                  <div className="flex justify-between items-center mb-1">
-                    <h3 className="text-sm font-medium text-gray-500">Retail Notes</h3>
-                    {!editingNotes.hasOwnProperty(product.id) && (
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        onClick={() => startEditing(product.id, product.retailNotes || "")}
-                        className="h-7 px-2 text-xs"
-                      >
-                        Edit
-                      </Button>
-                    )}
-                  </div>
-                  
-                  {editingNotes.hasOwnProperty(product.id) ? (
-                    <div className="space-y-2">
-                      <Textarea
-                        value={editingNotes[product.id] || ""}
-                        onChange={(e) => handleNotesChange(product.id, e.target.value)}
-                        placeholder="Enter retail notes..."
-                        rows={3}
-                      />
-                      <div className="flex justify-end space-x-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => cancelEditing(product.id)}
-                          className="h-7 px-2 text-xs"
-                        >
-                          Cancel
-                        </Button>
-                        <Button
-                          size="sm"
-                          onClick={() => saveNotes(product.id)}
-                          className="h-7 px-2 text-xs"
-                        >
-                          Save
-                        </Button>
+        <div className="bg-white rounded-lg shadow overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Crop
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Field Location
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Wash Inventory
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Harvest Bins
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Field Notes
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Retail Notes
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filteredProducts.map((product) => (
+                  <tr key={product.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      {product.name}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {product.fieldLocation}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <span className="font-medium">{product.washInventory || "0"}</span> {product.unit}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {product.harvestBins || "None"}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-500 max-w-xs truncate">
+                      <div className="truncate" title={product.fieldNotes || "No field notes"}>
+                        {product.fieldNotes || "No field notes"}
                       </div>
-                    </div>
-                  ) : (
-                    <p className="text-sm">{product.retailNotes || "No retail notes"}</p>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-500 max-w-xs">
+                      {editingNotes.hasOwnProperty(product.id) ? (
+                        <div className="space-y-2">
+                          <Textarea
+                            value={editingNotes[product.id] || ""}
+                            onChange={(e) => handleNotesChange(product.id, e.target.value)}
+                            placeholder="Enter retail notes..."
+                            rows={3}
+                            className="w-full"
+                          />
+                          <div className="flex justify-end space-x-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => cancelEditing(product.id)}
+                              className="h-7 px-2 text-xs"
+                            >
+                              Cancel
+                            </Button>
+                            <Button
+                              size="sm"
+                              onClick={() => saveNotes(product.id)}
+                              className="h-7 px-2 text-xs"
+                            >
+                              Save
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="truncate" title={product.retailNotes || "No retail notes"}>
+                          {product.retailNotes || "No retail notes"}
+                        </div>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      {!editingNotes.hasOwnProperty(product.id) && (
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={() => startEditing(product.id, product.retailNotes || "")}
+                          className="text-blue-600 hover:text-blue-800"
+                        >
+                          Edit Notes
+                        </Button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>

@@ -208,7 +208,7 @@ export default function InventoryPage() {
             <CardHeader>
               <CardTitle>Wholesale &amp; Kitchen Inventory</CardTitle>
               <CardDescription>
-                View and manage inventory for wholesale and kitchen use
+                Track crop quantities for wholesale and kitchen use
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -217,13 +217,16 @@ export default function InventoryPage() {
                   <thead className="bg-gray-50">
                     <tr>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Type
+                        Field Location
                       </th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Crop
                       </th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Inventory
+                        Wholesale Count
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Kitchen Count
                       </th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Field Notes
@@ -235,79 +238,182 @@ export default function InventoryPage() {
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
                     {filteredProducts
-                      .filter(p => ["Wholesale", "Kitchen"].includes(p.fieldLocation))
-                      .map((product) => (
-                        <tr 
-                          key={product.id} 
-                          className="hover:bg-gray-100 cursor-pointer"
-                          onClick={() => handleViewProductDetails(product)}
-                        >
-                          <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
-                            {product.fieldLocation}
-                          </td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
-                            {product.name}
-                          </td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
-                            <div className="flex items-center space-x-2">
+                      .filter(p => !["Wholesale", "Kitchen"].includes(p.fieldLocation))
+                      .map((product) => {
+                        // Find corresponding Wholesale and Kitchen products if they exist
+                        const wholesaleProduct = products.find(p => 
+                          p.fieldLocation === "Wholesale" && p.name === product.name
+                        ) || { id: 0, currentStock: 0 };
+                        
+                        const kitchenProduct = products.find(p => 
+                          p.fieldLocation === "Kitchen" && p.name === product.name
+                        ) || { id: 0, currentStock: 0 };
+                        
+                        return (
+                          <tr 
+                            key={product.id} 
+                            className="hover:bg-gray-100 cursor-pointer"
+                            onClick={() => handleViewProductDetails(product)}
+                          >
+                            <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
+                              {product.fieldLocation}
+                            </td>
+                            <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
+                              {product.name}
+                            </td>
+                            
+                            {/* Wholesale Count with +/- buttons */}
+                            <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                              <div className="flex items-center space-x-2">
+                                <Button
+                                  variant="outline"
+                                  size="icon"
+                                  className="h-6 w-6 rounded-full p-0"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    
+                                    // If this product doesn't have a wholesale entry yet, create one
+                                    if (wholesaleProduct.id === 0) {
+                                      // This would create a new wholesale product entry in a real implementation
+                                      toast({
+                                        title: "Action Required",
+                                        description: "Please create a Wholesale entry for this crop first",
+                                      });
+                                      return;
+                                    }
+                                    
+                                    const newStock = Math.max(0, (parseInt(wholesaleProduct.currentStock?.toString() || "0") - 1));
+                                    updateProductMutation({
+                                      id: wholesaleProduct.id,
+                                      currentStock: newStock
+                                    });
+                                  }}
+                                >
+                                  <Minus className="h-3 w-3" />
+                                </Button>
+                                
+                                <Input
+                                  className="w-16 h-7 px-1 text-center"
+                                  value={wholesaleProduct.currentStock || 0}
+                                  onChange={(e) => {
+                                    // This would update the stock in a real implementation
+                                  }}
+                                  onClick={(e) => e.stopPropagation()}
+                                  readOnly={wholesaleProduct.id === 0}
+                                />
+                                
+                                <Button
+                                  variant="outline"
+                                  size="icon"
+                                  className="h-6 w-6 rounded-full p-0"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    
+                                    if (wholesaleProduct.id === 0) {
+                                      // This would create a new wholesale product entry in a real implementation
+                                      toast({
+                                        title: "Action Required",
+                                        description: "Please create a Wholesale entry for this crop first",
+                                      });
+                                      return;
+                                    }
+                                    
+                                    const newStock = (parseInt(wholesaleProduct.currentStock?.toString() || "0") + 1);
+                                    updateProductMutation({
+                                      id: wholesaleProduct.id,
+                                      currentStock: newStock
+                                    });
+                                  }}
+                                >
+                                  <Plus className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            </td>
+                            
+                            {/* Kitchen Count with +/- buttons */}
+                            <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                              <div className="flex items-center space-x-2">
+                                <Button
+                                  variant="outline"
+                                  size="icon"
+                                  className="h-6 w-6 rounded-full p-0"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    
+                                    if (kitchenProduct.id === 0) {
+                                      toast({
+                                        title: "Action Required",
+                                        description: "Please create a Kitchen entry for this crop first",
+                                      });
+                                      return;
+                                    }
+                                    
+                                    const newStock = Math.max(0, (parseInt(kitchenProduct.currentStock?.toString() || "0") - 1));
+                                    updateProductMutation({
+                                      id: kitchenProduct.id,
+                                      currentStock: newStock
+                                    });
+                                  }}
+                                >
+                                  <Minus className="h-3 w-3" />
+                                </Button>
+                                
+                                <Input
+                                  className="w-16 h-7 px-1 text-center"
+                                  value={kitchenProduct.currentStock || 0}
+                                  onChange={(e) => {
+                                    // This would update the stock in a real implementation
+                                  }}
+                                  onClick={(e) => e.stopPropagation()}
+                                  readOnly={kitchenProduct.id === 0}
+                                />
+                                
+                                <Button
+                                  variant="outline"
+                                  size="icon"
+                                  className="h-6 w-6 rounded-full p-0"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    
+                                    if (kitchenProduct.id === 0) {
+                                      toast({
+                                        title: "Action Required",
+                                        description: "Please create a Kitchen entry for this crop first",
+                                      });
+                                      return;
+                                    }
+                                    
+                                    const newStock = (parseInt(kitchenProduct.currentStock?.toString() || "0") + 1);
+                                    updateProductMutation({
+                                      id: kitchenProduct.id,
+                                      currentStock: newStock
+                                    });
+                                  }}
+                                >
+                                  <Plus className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            </td>
+                            
+                            <td className="px-4 py-3 text-sm text-gray-900 max-w-xs truncate">
+                              {product.fieldNotes || "No notes"}
+                            </td>
+                            <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">
                               <Button
                                 variant="outline"
-                                size="icon"
-                                className="h-6 w-6 rounded-full p-0"
+                                size="sm"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  const newStock = Math.max(0, (parseInt(product.currentStock?.toString() || "0") - 1));
-                                  updateProductMutation({
-                                    id: product.id,
-                                    currentStock: newStock
-                                  });
+                                  handleViewProductDetails(product);
                                 }}
+                                className="text-xs"
                               >
-                                <Minus className="h-3 w-3" />
+                                Details
                               </Button>
-                              <Input
-                                className="w-16 h-7 px-1 text-center"
-                                value={product.currentStock}
-                                onChange={(e) => {
-                                  // This would be handled by the updateProduct mutation in a real implementation
-                                }}
-                                onClick={(e) => e.stopPropagation()}
-                              />
-                              <Button
-                                variant="outline"
-                                size="icon"
-                                className="h-6 w-6 rounded-full p-0"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  const newStock = (parseInt(product.currentStock?.toString() || "0") + 1);
-                                  updateProductMutation({
-                                    id: product.id,
-                                    currentStock: newStock
-                                  });
-                                }}
-                              >
-                                <Plus className="h-3 w-3" />
-                              </Button>
-                            </div>
-                          </td>
-                          <td className="px-4 py-3 text-sm text-gray-900 max-w-xs truncate">
-                            {product.fieldNotes || "No notes"}
-                          </td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleViewProductDetails(product);
-                              }}
-                              className="text-xs"
-                            >
-                              Details
-                            </Button>
-                          </td>
-                        </tr>
-                      ))}
+                            </td>
+                          </tr>
+                        );
+                      })}
                   </tbody>
                 </table>
               </div>

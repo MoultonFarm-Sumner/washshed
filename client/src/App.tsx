@@ -6,9 +6,7 @@ import NotFound from "@/pages/not-found";
 import Layout from "@/components/Layout";
 import InventoryPage from "@/pages/inventory/InventoryPage";
 import HistoryPage from "@/pages/history/HistoryPage";
-import EnhancedHistoryPage from "@/pages/history/EnhancedHistoryPage";
 import ReportsPage from "@/pages/reports/ReportsPage";
-import EnhancedReportsPage from "@/pages/reports/EnhancedReportsPage";
 import ProductsPage from "@/pages/products/ProductsPage";
 import RetailOverviewPage from "@/pages/retail/RetailOverviewPage";
 import SettingsPage from "@/pages/settings/SettingsPage";
@@ -22,9 +20,7 @@ function Router() {
         <Route path="/" component={InventoryPage} />
         <Route path="/inventory" component={InventoryPage} />
         <Route path="/history" component={HistoryPage} />
-        <Route path="/enhanced-history" component={EnhancedHistoryPage} />
         <Route path="/reports" component={ReportsPage} />
-        <Route path="/enhanced-reports" component={EnhancedReportsPage} />
         <Route path="/products" component={ProductsPage} />
         <Route path="/retail" component={RetailOverviewPage} />
         <Route path="/settings" component={SettingsPage} />

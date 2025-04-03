@@ -22,9 +22,7 @@ export default function Header() {
     { name: "Retail Overview", path: "/retail" },
     { name: "Field Locations", path: "/fields" },
     { name: "Inventory History", path: "/history" },
-    { name: "Enhanced History", path: "/enhanced-history" },
     { name: "Reports", path: "/reports" },
-    { name: "Enhanced Reports", path: "/enhanced-reports" },
     { name: "Product Management", path: "/products" },
     { name: "Settings", path: "/settings" },
   ];

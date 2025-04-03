@@ -160,9 +160,9 @@ export default function EnhancedReportsPage() {
           starting: 0,
           added: 0,
           removed: 0,
-          current: product.currentStock,
-          isLowStock: product.currentStock < product.minStock,
-          isCriticalStock: product.currentStock < Math.floor(product.minStock / 2),
+          current: parseInt(product.washInventory || '0') || 0, // Use wash inventory for current stock
+          isLowStock: (parseInt(product.washInventory || '0') || 0) < product.minStock,
+          isCriticalStock: (parseInt(product.washInventory || '0') || 0) < Math.floor(product.minStock / 2),
           fieldNotes: product.fieldNotes || "",
           retailNotes: product.retailNotes || "",
           washInventory: product.washInventory || "",
@@ -258,7 +258,7 @@ export default function EnhancedReportsPage() {
         "Starting Stock",
         "Added",
         "Removed",
-        "Current Stock",
+        "Current Stock (Wash)",
         "Units",
         "Low Stock",
         "Field Notes",
@@ -555,7 +555,7 @@ export default function EnhancedReportsPage() {
                         onCheckedChange={() => handleColumnToggle("current")}
                         disabled={true}  // Always show current
                       />
-                      <label htmlFor="col-current" className="text-sm">Current Stock</label>
+                      <label htmlFor="col-current" className="text-sm">Current Stock (Wash)</label>
                     </div>
                     <div className="flex items-center space-x-2">
                       <Checkbox 
@@ -769,7 +769,7 @@ export default function EnhancedReportsPage() {
                           <TableHead>Field Location</TableHead>
                         )}
                         <TableHead>Crop</TableHead>
-                        <TableHead className="text-right">Current Stock</TableHead>
+                        <TableHead className="text-right">Current Stock (Wash)</TableHead>
                         {selectedColumns.includes("unit") && (
                           <TableHead>Unit</TableHead>
                         )}
@@ -894,7 +894,7 @@ export default function EnhancedReportsPage() {
                       <CardContent className="pt-4">
                         <div className="grid grid-cols-3 gap-4 mb-4">
                           <div className="text-center">
-                            <div className="text-sm text-gray-500">Current</div>
+                            <div className="text-sm text-gray-500">Current (Wash)</div>
                             <div className="text-xl font-bold">
                               {product.current} 
                               {selectedColumns.includes("unit") && <span className="text-xs font-normal ml-1">{product.unit}</span>}

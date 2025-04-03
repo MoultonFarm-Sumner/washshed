@@ -19,9 +19,12 @@ export default function Header() {
   // Define the tabs and their paths
   const tabs = [
     { name: "Wash Shed Inventory", path: "/inventory" },
+    { name: "Retail Overview", path: "/retail" },
+    { name: "Field Locations", path: "/fields" },
     { name: "Inventory History", path: "/history" },
     { name: "Reports", path: "/reports" },
     { name: "Product Management", path: "/products" },
+    { name: "Settings", path: "/settings" },
   ];
 
   // Handle the root path by redirecting to /inventory
@@ -42,9 +45,8 @@ export default function Header() {
             <Link
               key={tab.path}
               href={tab.path}
-              onClick={() => setLocation(tab.path)}
             >
-              <a
+              <div
                 className={`px-4 py-3 focus:outline-none whitespace-nowrap cursor-pointer ${
                   activePath === tab.path
                     ? "border-b-2 border-white"
@@ -52,7 +54,7 @@ export default function Header() {
                 }`}
               >
                 {tab.name}
-              </a>
+              </div>
             </Link>
           ))}
         </nav>

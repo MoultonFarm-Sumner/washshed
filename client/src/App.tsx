@@ -5,8 +5,8 @@ import { Toaster } from "@/components/ui/toaster";
 import NotFound from "@/pages/not-found";
 import Layout from "@/components/Layout";
 import InventoryPage from "@/pages/inventory/InventoryPage";
-import HistoryPage from "@/pages/history/HistoryPage";
-import ReportsPage from "@/pages/reports/ReportsPage";
+import EnhancedHistoryPage from "@/pages/history/EnhancedHistoryPage";
+import EnhancedReportsPage from "@/pages/reports/EnhancedReportsPage";
 import ProductsPage from "@/pages/products/ProductsPage";
 import RetailOverviewPage from "@/pages/retail/RetailOverviewPage";
 import SettingsPage from "@/pages/settings/SettingsPage";
@@ -19,8 +19,8 @@ function Router() {
       <Switch>
         <Route path="/" component={InventoryPage} />
         <Route path="/inventory" component={InventoryPage} />
-        <Route path="/history" component={HistoryPage} />
-        <Route path="/reports" component={ReportsPage} />
+        <Route path="/history" component={EnhancedHistoryPage} />
+        <Route path="/reports" component={EnhancedReportsPage} />
         <Route path="/products" component={ProductsPage} />
         <Route path="/retail" component={RetailOverviewPage} />
         <Route path="/settings" component={SettingsPage} />

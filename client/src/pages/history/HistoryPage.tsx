@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { Filter } from "lucide-react";
+import type { HistoryEntry } from "@/types";
 
 export default function HistoryPage() {
   const { toast } = useToast();
@@ -27,11 +28,11 @@ export default function HistoryPage() {
 
   // Fetch inventory history data
   const {
-    data: historyData = [],
+    data: historyData = [] as HistoryEntry[],
     isLoading,
     error,
     refetch,
-  } = useQuery({
+  } = useQuery<HistoryEntry[]>({
     queryKey,
   });
 
@@ -41,18 +42,20 @@ export default function HistoryPage() {
   };
 
   // Format date for display
-  const formatDateDisplay = (dateString: string) => {
+  const formatDateDisplay = (dateString: string | Date) => {
     try {
-      return format(new Date(dateString), "MMM dd, yyyy");
+      const date = dateString instanceof Date ? dateString : new Date(dateString);
+      return format(date, "MMM dd, yyyy");
     } catch (error) {
       return "Invalid date";
     }
   };
 
   // Format time for display
-  const formatTimeDisplay = (dateString: string) => {
+  const formatTimeDisplay = (dateString: string | Date) => {
     try {
-      return format(new Date(dateString), "hh:mm a");
+      const date = dateString instanceof Date ? dateString : new Date(dateString);
+      return format(date, "hh:mm a");
     } catch (error) {
       return "Invalid time";
     }
@@ -149,7 +152,7 @@ export default function HistoryPage() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {paginatedHistory.map((entry: any) => (
+                {paginatedHistory.map((entry: HistoryEntry) => (
                   <tr key={entry.id}>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
                       {formatDateDisplay(entry.timestamp)}

@@ -1,12 +1,15 @@
 import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
-import { storage } from "./storage";
+import { z } from "zod";
+import { PgStorage } from "./pg-storage";
 import { 
   insertProductSchema, 
   insertInventoryHistorySchema, 
   insertFieldLocationSchema 
 } from "@shared/schema";
-import { z } from "zod";
+
+// Use the PostgreSQL storage implementation
+const storage = new PgStorage();
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // API routes - prefix all with /api

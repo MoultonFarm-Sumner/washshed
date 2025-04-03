@@ -1,0 +1,115 @@
+import { db } from './database';
+import { 
+  Product, 
+  InventoryHistory, 
+  FieldLocation, 
+  InsertProduct, 
+  InsertInventoryHistory, 
+  InsertFieldLocation,
+  products,
+  inventoryHistory,
+  fieldLocations
+} from '../shared/schema';
+import { IStorage } from './storage';
+import { eq, desc, between, sql } from 'drizzle-orm';
+
+export class PgStorage implements IStorage {
+  // Product operations
+  async getProducts(): Promise<Product[]> {
+    return await db.select().from(products);
+  }
+
+  async getProduct(id: number): Promise<Product | undefined> {
+    const result = await db.select().from(products).where(eq(products.id, id));
+    return result.length > 0 ? result[0] : undefined;
+  }
+
+  async createProduct(product: InsertProduct): Promise<Product> {
+    const result = await db.insert(products).values(product).returning();
+    return result[0];
+  }
+
+  async updateProduct(id: number, productData: Partial<Product>): Promise<Product | undefined> {
+    const result = await db
+      .update(products)
+      .set(productData)
+      .where(eq(products.id, id))
+      .returning();
+    
+    return result.length > 0 ? result[0] : undefined;
+  }
+
+  async deleteProduct(id: number): Promise<boolean> {
+    const result = await db
+      .delete(products)
+      .where(eq(products.id, id))
+      .returning({ id: products.id });
+    
+    return result.length > 0;
+  }
+
+  // Inventory history operations
+  async getInventoryHistory(): Promise<InventoryHistory[]> {
+    return await db
+      .select()
+      .from(inventoryHistory)
+      .orderBy(desc(inventoryHistory.timestamp));
+  }
+
+  async getInventoryHistoryByDateRange(startDate: Date, endDate: Date): Promise<InventoryHistory[]> {
+    return await db
+      .select()
+      .from(inventoryHistory)
+      .where(
+        between(
+          inventoryHistory.timestamp,
+          sql`${startDate.toISOString()}::timestamp`,
+          sql`${endDate.toISOString()}::timestamp`
+        )
+      )
+      .orderBy(desc(inventoryHistory.timestamp));
+  }
+
+  async getInventoryHistoryByProduct(productId: number): Promise<InventoryHistory[]> {
+    return await db
+      .select()
+      .from(inventoryHistory)
+      .where(eq(inventoryHistory.productId, productId))
+      .orderBy(desc(inventoryHistory.timestamp));
+  }
+
+  async createInventoryHistory(history: InsertInventoryHistory): Promise<InventoryHistory> {
+    const result = await db
+      .insert(inventoryHistory)
+      .values(history)
+      .returning();
+    
+    return result[0];
+  }
+
+  // Field location operations
+  async getFieldLocations(): Promise<FieldLocation[]> {
+    return await db
+      .select()
+      .from(fieldLocations)
+      .orderBy(fieldLocations.name);
+  }
+
+  async createFieldLocation(location: InsertFieldLocation): Promise<FieldLocation> {
+    const result = await db
+      .insert(fieldLocations)
+      .values(location)
+      .returning();
+    
+    return result[0];
+  }
+
+  async deleteFieldLocation(id: number): Promise<boolean> {
+    const result = await db
+      .delete(fieldLocations)
+      .where(eq(fieldLocations.id, id))
+      .returning({ id: fieldLocations.id });
+    
+    return result.length > 0;
+  }
+}

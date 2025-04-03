@@ -183,6 +183,12 @@ export default function InventoryPage() {
                     Wash Inventory
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Harvest Bins
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Units Harvested
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Units
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -217,23 +223,27 @@ export default function InventoryPage() {
                         {product.name}
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-800">
-                        {/* Crop needs would be added to schema */}
-                        -
+                        {product.cropNeeds || "-"}
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-800">
                         <span className={stockClassName}>
-                          {product.currentStock}
+                          {product.standInventory || product.currentStock}
                         </span>
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-800">
-                        {/* Wash inventory would be added to schema */}
-                        -
+                        {product.washInventory || "-"}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-800">
+                        {product.harvestBins || "-"}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-800">
+                        {product.unitsHarvested || "-"}
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-800">
                         {product.unit}
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-800 max-w-[200px] truncate">
-                        {product.productionNotes || "-"}
+                        {product.fieldNotes || "-"}
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-800 max-w-[200px] truncate">
                         {product.retailNotes || "-"}

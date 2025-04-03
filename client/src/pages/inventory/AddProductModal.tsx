@@ -56,8 +56,13 @@ export default function AddProductModal({
       fieldLocation: "",
       currentStock: 0,
       unit: "bunches",
-      productionNotes: "",
+      fieldNotes: "",
       retailNotes: "",
+      cropNeeds: "",
+      standInventory: "",
+      washInventory: "",
+      harvestBins: "",
+      unitsHarvested: "",
       imageUrl: "",
     },
   });
@@ -214,13 +219,90 @@ export default function AddProductModal({
 
             <FormField
               control={form.control}
-              name="productionNotes"
+              name="cropNeeds"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Production Notes</FormLabel>
+                  <FormLabel>Crop Needs</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Enter crop needs"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="standInventory"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Stand Inventory</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Stand inventory" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="washInventory"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Wash Inventory</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Wash inventory" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="harvestBins"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Harvest Bins</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Harvest bins" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="unitsHarvested"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Units Harvested</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Units harvested" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <FormField
+              control={form.control}
+              name="fieldNotes"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Field Notes</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Enter planting information, growing conditions, etc."
+                      placeholder="Enter field notes, growing conditions, etc."
                       rows={2}
                       {...field}
                     />

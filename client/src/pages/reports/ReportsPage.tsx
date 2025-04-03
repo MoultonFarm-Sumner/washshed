@@ -13,6 +13,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { BarChart, FileDown } from "lucide-react";
 import { generatePDF } from "@/lib/pdf-generator";
+import { HistoryEntry, Product, ReportItem } from "@/types";
 
 export default function ReportsPage() {
   const { toast } = useToast();
@@ -23,7 +24,7 @@ export default function ReportsPage() {
   const [showReport, setShowReport] = useState(false);
 
   // Fetch products for filter dropdown
-  const { data: products = [] } = useQuery({
+  const { data: products = [] } = useQuery<Product[]>({
     queryKey: ["/api/products"],
   });
 
@@ -38,13 +39,13 @@ export default function ReportsPage() {
       : [""]),
   ];
 
-  const { data: historyData = [], isLoading: historyLoading } = useQuery({
+  const { data: historyData = [], isLoading: historyLoading } = useQuery<HistoryEntry[]>({
     queryKey: historyQueryKey,
     enabled: showReport,
   });
 
   // Filter history data based on product selection
-  const filteredHistory = historyData.filter((entry: any) => {
+  const filteredHistory = historyData.filter((entry) => {
     if (filterBy === "all") return true;
     return entry.productId === parseInt(filterBy);
   });
@@ -57,7 +58,7 @@ export default function ReportsPage() {
     const productSummary = new Map();
 
     // Initialize with all products at 0
-    products.forEach((product: any) => {
+    products.forEach((product: Product) => {
       productSummary.set(product.id, {
         id: product.id,
         name: product.name,
@@ -69,13 +70,13 @@ export default function ReportsPage() {
         current: product.currentStock,
         isLowStock: product.currentStock < 10,
         isCriticalStock: product.currentStock < 5,
-        fieldNotes: product.productionNotes,
+        fieldNotes: product.fieldNotes,
         retailNotes: product.retailNotes
       });
     });
 
     // Process history entries
-    filteredHistory.forEach((entry: any) => {
+    filteredHistory.forEach((entry: HistoryEntry) => {
       const product = productSummary.get(entry.productId);
       if (product) {
         if (entry.change > 0) {
@@ -197,7 +198,7 @@ export default function ReportsPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Products</SelectItem>
-                  {products.map((product: any) => (
+                  {products.map((product: Product) => (
                     <SelectItem key={product.id} value={product.id.toString()}>
                       {product.name}
                     </SelectItem>
@@ -261,7 +262,7 @@ export default function ReportsPage() {
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
-                        {reportData.map((product: any) => (
+                        {reportData.map((product: ReportItem) => (
                           <tr key={product.id}>
                             <td className="px-3 py-4 text-sm text-gray-800">
                               {product.fieldLocation}
@@ -333,8 +334,8 @@ export default function ReportsPage() {
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
                         {reportData
-                          .filter((product: any) => product.isLowStock)
-                          .map((product: any) => (
+                          .filter((product: ReportItem) => product.isLowStock)
+                          .map((product: ReportItem) => (
                             <tr key={product.id}>
                               <td className="px-3 py-4 text-sm text-gray-800">
                                 {product.fieldLocation}
@@ -373,7 +374,7 @@ export default function ReportsPage() {
                               </td>
                             </tr>
                           ))}
-                        {reportData.filter((product: any) => product.isLowStock).length === 0 && (
+                        {reportData.filter((product: ReportItem) => product.isLowStock).length === 0 && (
                           <tr>
                             <td
                               colSpan={7}

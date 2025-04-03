@@ -131,9 +131,10 @@ export default function ProductsPage() {
   };
 
   // Format date
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string | Date) => {
     try {
-      return format(new Date(dateString), "MMMM d, yyyy");
+      const date = dateString instanceof Date ? dateString : new Date(dateString);
+      return format(date, "MMMM d, yyyy");
     } catch (error) {
       return "Invalid date";
     }

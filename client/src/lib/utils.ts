@@ -18,14 +18,14 @@ export function getStockStatus(currentStock: number) {
 }
 
 /**
- * Formats a date string to a readable format
- * @param dateString The date string to format
+ * Formats a date string or Date object to a readable format
+ * @param dateInput The date string or Date object to format
  * @param includeTime Whether to include time in the output
  * @returns Formatted date string
  */
-export function formatDate(dateString: string, includeTime = false) {
+export function formatDate(dateInput: string | Date, includeTime = false) {
   try {
-    const date = new Date(dateString);
+    const date = dateInput instanceof Date ? dateInput : new Date(dateInput);
     
     if (includeTime) {
       return date.toLocaleString('en-US', {

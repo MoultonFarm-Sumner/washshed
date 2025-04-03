@@ -5,6 +5,23 @@ export interface StockStatus {
   isCriticalStock: boolean;
 }
 
+export interface Product {
+  id: number;
+  name: string;
+  fieldLocation: string;
+  unit: string;
+  currentStock: number;
+  minStock: number;
+  dateAdded: string;
+  fieldNotes?: string;
+  retailNotes?: string;
+  cropNeeds?: string;
+  standInventory?: string;
+  washInventory?: string;
+  harvestBins?: string;
+  unitsHarvested?: string;
+}
+
 export interface ReportItem {
   id: number;
   name: string;

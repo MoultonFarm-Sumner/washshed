@@ -36,8 +36,13 @@ export default function ProductDetailsModal({
   onProductUpdated,
 }: ProductDetailsModalProps) {
   const { toast } = useToast();
-  const [productionNotes, setProductionNotes] = useState(product.productionNotes || "");
+  const [fieldNotes, setFieldNotes] = useState(product.fieldNotes || "");
   const [retailNotes, setRetailNotes] = useState(product.retailNotes || "");
+  const [cropNeeds, setCropNeeds] = useState(product.cropNeeds || "");
+  const [standInventory, setStandInventory] = useState(product.standInventory || "");
+  const [washInventory, setWashInventory] = useState(product.washInventory || "");
+  const [harvestBins, setHarvestBins] = useState(product.harvestBins || "");
+  const [unitsHarvested, setUnitsHarvested] = useState(product.unitsHarvested || "");
   const [currentStock, setCurrentStock] = useState(product.currentStock);
   const [unit, setUnit] = useState(product.unit);
 
@@ -73,8 +78,13 @@ export default function ProductDetailsModal({
 
   const handleSave = () => {
     updateProduct({
-      productionNotes,
+      fieldNotes,
       retailNotes,
+      cropNeeds,
+      standInventory,
+      washInventory,
+      harvestBins,
+      unitsHarvested,
       currentStock,
       unit
     });
@@ -103,13 +113,70 @@ export default function ProductDetailsModal({
 
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Production Notes
+            Crop Needs
+          </label>
+          <Input
+            value={cropNeeds}
+            onChange={(e) => setCropNeeds(e.target.value)}
+            placeholder="Enter crop needs"
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-4 mb-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Stand Inventory
+            </label>
+            <Input
+              value={standInventory}
+              onChange={(e) => setStandInventory(e.target.value)}
+              placeholder="Stand inventory"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Wash Inventory
+            </label>
+            <Input
+              value={washInventory}
+              onChange={(e) => setWashInventory(e.target.value)}
+              placeholder="Wash inventory"
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4 mb-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Harvest Bins
+            </label>
+            <Input
+              value={harvestBins}
+              onChange={(e) => setHarvestBins(e.target.value)}
+              placeholder="Harvest bins"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Units Harvested
+            </label>
+            <Input
+              value={unitsHarvested}
+              onChange={(e) => setUnitsHarvested(e.target.value)}
+              placeholder="Units harvested"
+            />
+          </div>
+        </div>
+
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Field Notes
           </label>
           <Textarea
-            value={productionNotes}
-            onChange={(e) => setProductionNotes(e.target.value)}
+            value={fieldNotes}
+            onChange={(e) => setFieldNotes(e.target.value)}
             rows={3}
-            placeholder="Enter production notes"
+            placeholder="Enter field notes"
           />
         </div>
 

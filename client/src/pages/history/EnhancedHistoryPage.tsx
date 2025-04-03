@@ -57,10 +57,13 @@ export default function EnhancedHistoryPage() {
     queryParams.append("productId", selectedProduct.toString());
   }
 
+  // Add a timestamp to force fresh data (avoid 304 responses)
+  queryParams.append("_t", Date.now().toString());
+
   const queryString = queryParams.toString() ? `?${queryParams.toString()}` : "";
   const queryKey = ["/api/inventory/history", queryString];
 
-  // Fetch inventory history data
+  // Fetch inventory history data with auto-refresh
   const {
     data: historyData = [] as HistoryEntry[],
     isLoading,
@@ -68,6 +71,8 @@ export default function EnhancedHistoryPage() {
     refetch,
   } = useQuery<HistoryEntry[]>({
     queryKey,
+    refetchInterval: 5000, // Refresh every 5 seconds
+    staleTime: 1000, // Consider data stale after 1 second
   });
 
   // Fetch products for filtering with auto-refresh

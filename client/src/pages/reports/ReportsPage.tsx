@@ -68,7 +68,9 @@ export default function ReportsPage() {
         removed: 0,
         current: product.currentStock,
         isLowStock: product.currentStock < 10,
-        isCriticalStock: product.currentStock < 5
+        isCriticalStock: product.currentStock < 5,
+        fieldNotes: product.productionNotes,
+        retailNotes: product.retailNotes
       });
     });
 
@@ -235,40 +237,63 @@ export default function ReportsPage() {
                     <table className="min-w-full divide-y divide-gray-200">
                       <thead className="bg-gray-50">
                         <tr>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Product
+                          <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Field Location
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Starting
+                          <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Crop
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Added
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Removed
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Current
+                          </th>
+                          <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Units
+                          </th>
+                          <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Changes
+                          </th>
+                          <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Field Notes
+                          </th>
+                          <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Retail Notes
                           </th>
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
                         {reportData.map((product: any) => (
                           <tr key={product.id}>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
+                            <td className="px-3 py-4 text-sm text-gray-800">
+                              {product.fieldLocation}
+                            </td>
+                            <td className="px-3 py-4 text-sm text-gray-800">
                               {product.name}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
-                              {product.starting} {product.unit}
+                            <td className="px-3 py-4 text-sm text-gray-800 font-medium">
+                              {product.current}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">
-                              {product.added > 0 ? `+${product.added}` : product.added}
+                            <td className="px-3 py-4 text-sm text-gray-800">
+                              {product.unit}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-red-600">
-                              {product.removed > 0 ? `-${product.removed}` : product.removed}
+                            <td className="px-3 py-4 text-sm">
+                              <div className="flex flex-col">
+                                <span className="text-green-600 font-medium">
+                                  {product.added > 0 ? `+${product.added}` : ""}
+                                </span>
+                                <span className="text-red-600 font-medium">
+                                  {product.removed > 0 ? `-${product.removed}` : ""}
+                                </span>
+                              </div>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800 font-medium">
-                              {product.current} {product.unit}
+                            <td className="px-3 py-4 text-sm text-gray-800 max-w-[200px]">
+                              <div className="truncate" title={product.fieldNotes || "-"}>
+                                {product.fieldNotes || "-"}
+                              </div>
+                            </td>
+                            <td className="px-3 py-4 text-sm text-gray-800 max-w-[200px]">
+                              <div className="truncate" title={product.retailNotes || "-"}>
+                                {product.retailNotes || "-"}
+                              </div>
                             </td>
                           </tr>
                         ))}
@@ -283,17 +308,26 @@ export default function ReportsPage() {
                     <table className="min-w-full divide-y divide-gray-200">
                       <thead className="bg-gray-50">
                         <tr>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Product
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Field Location
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Current Stock
+                          <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Crop
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Current
+                          </th>
+                          <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Units
+                          </th>
+                          <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Status
+                          </th>
+                          <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Field Notes
+                          </th>
+                          <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Retail Notes
                           </th>
                         </tr>
                       </thead>
@@ -302,16 +336,19 @@ export default function ReportsPage() {
                           .filter((product: any) => product.isLowStock)
                           .map((product: any) => (
                             <tr key={product.id}>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
-                                {product.name}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
+                              <td className="px-3 py-4 text-sm text-gray-800">
                                 {product.fieldLocation}
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
-                                {product.current} {product.unit}
+                              <td className="px-3 py-4 text-sm text-gray-800">
+                                {product.name}
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap">
+                              <td className="px-3 py-4 text-sm text-gray-800 font-medium">
+                                {product.current}
+                              </td>
+                              <td className="px-3 py-4 text-sm text-gray-800">
+                                {product.unit}
+                              </td>
+                              <td className="px-3 py-4">
                                 <span
                                   className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                                     product.isCriticalStock
@@ -324,13 +361,23 @@ export default function ReportsPage() {
                                     : "Low Stock"}
                                 </span>
                               </td>
+                              <td className="px-3 py-4 text-sm text-gray-800 max-w-[200px]">
+                                <div className="truncate" title={product.fieldNotes || "-"}>
+                                  {product.fieldNotes || "-"}
+                                </div>
+                              </td>
+                              <td className="px-3 py-4 text-sm text-gray-800 max-w-[200px]">
+                                <div className="truncate" title={product.retailNotes || "-"}>
+                                  {product.retailNotes || "-"}
+                                </div>
+                              </td>
                             </tr>
                           ))}
                         {reportData.filter((product: any) => product.isLowStock).length === 0 && (
                           <tr>
                             <td
-                              colSpan={4}
-                              className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center"
+                              colSpan={7}
+                              className="px-3 py-4 text-sm text-gray-500 text-center"
                             >
                               No low stock items found
                             </td>

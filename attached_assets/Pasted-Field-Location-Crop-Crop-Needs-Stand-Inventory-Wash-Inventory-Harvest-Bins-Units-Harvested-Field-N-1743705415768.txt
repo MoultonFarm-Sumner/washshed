@@ -1,0 +1,121 @@
+Field Location	Crop	Crop Needs	Stand Inventory	Wash Inventory	Harvest (Bins)	Units Harvested	Field Notes	Retail Notes
+Stone Wall	E.G. Arugula	60	1	1	1	20		
+		Date Range						
+		Thurs-Fri						
+								
+Veg. Ridge	Head Lettuce							
+Upper Blais	Red Leaf	15						
+	Iceberg							
+	Green Leaf	15						
+	Oak Leaf							
+	Romaine							
+								
+								
+Side Hill 3	Salanova	80						
+	Arugula							
+	Mixed Greens							
+	Spinach	40						
+	Baby Kale							
+								
+								
+Veg. Ridge	Kale							
+	Red Kale							
+	Green Kale							
+	Toscano Kale							
+								
+	Herbs							
+	Dill							
+	Cilantro							
+	Parsley							
+Side Hill 3	Basil							
+	Bok Choy							
+Veg. Ridge								
+Veg. Ridge	Red Beets							
+Veg. Ridge	Gold Beets							
+	Loose Red Beets							
+	Loose Gold Beets							
+	Beet Greens							
+Lower Blais	Swiss Chard							
+Lower Blais	Carrots							
+	Rainbow Carrots							
+	Loose Carrots							
+								
+	Parsnips							
+								
+	Garlic Scapes 							
+	Scallions							
+	Loose Onions							
+Rock Pile	Leeks							
+Corn Ridge	Bunched Onions							
+	Yellow Onions							
+	Red Onions							
+								
+Stone Wall	Celery							
+Side Hill 1	Broccoli							
+Side Hill 1	Cauliflower							
+Side Hill 2	Green Cabbage							
+Rt. 25	Red Cabbage							
+	Brussel Sprouts							
+	Artichokes 							
+								
+Stone Wall	Green Peppers							
+	Colored Peppers							
+	Purple							
+	Cubanelle							
+	Shishito							
+	Poblano							
+	Mixed  Hots							
+	Lunchbox							
+								
+Upper Blais	Eggplant							
+	Oriental Eggplant							
+	Italian Eggplant							
+	Purple Eggplant							
+	Annina Eggplant							
+								
+	Wholesale							
+	Salad Mix	15						
+								
+	Kitchen							
+	Nova	15						
+	Scallions							
+	Bok Choy							
+	Butternut							
+								
+								
+								
+	Harvest Box							
+								
+	External Picks							
+Dane	Red Potatoes							
+	White Potatoes							
+	Yukon							
+	Fingerling							
+	Quarts							
+	Bags							
+								
+Hoisington	Cherry Tomatoes							
+Stone Wall	Slicing Tomatoes							
+	Canner							
+Stone Wall	Heirlooms							
+	Plum							
+	Orange							
+								
+Lower Blais	Yellow  Beans							
+Lower Blais	Green Beans							
+	Bagged Beans							
+								
+	Snap Peas							
+	Shell Peas							
+								
+	Strawberries							
+								
+	Corn							
+								
+								
+								
+								
+								
+								
+								
+								

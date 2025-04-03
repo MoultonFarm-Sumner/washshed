@@ -146,25 +146,118 @@ export default function InventoryPage() {
         </div>
       </div>
 
-      {/* Inventory Items Grid */}
-      {isLoading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {[...Array(4)].map((_, index) => (
-            <div key={index} className="bg-white rounded-lg h-52 animate-pulse"></div>
-          ))}
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {filteredProducts.map((product: Product) => (
-            <InventoryCard 
-              key={product.id} 
-              product={product} 
-              onViewDetails={handleViewDetails}
-              onInventoryUpdated={refetch}
-            />
-          ))}
-        </div>
-      )}
+      {/* Inventory Items Table */}
+      <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+        {isLoading ? (
+          <div className="p-6 text-center">
+            <div className="animate-spin inline-block w-8 h-8 border-4 border-current border-t-transparent text-blue-600 rounded-full"></div>
+            <p className="mt-2 text-gray-600">Loading inventory data...</p>
+          </div>
+        ) : filteredProducts.length === 0 ? (
+          <div className="p-6 text-center">
+            <p className="text-gray-500">No items found.</p>
+            {(searchQuery || fieldFilter !== "all") && (
+              <p className="text-gray-500 text-sm mt-1">
+                Try adjusting your search filters.
+              </p>
+            )}
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Field Location
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Crop
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Crop Needs
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Stand Inventory
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Wash Inventory
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Units
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Field Notes
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Retail Notes
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filteredProducts.map((product: Product) => {
+                  const isLowStock = product.currentStock < 10;
+                  const isCriticalStock = product.currentStock < 5;
+                  let stockClassName = "";
+                  
+                  if (isCriticalStock) {
+                    stockClassName = "text-red-500 font-medium";
+                  } else if (isLowStock) {
+                    stockClassName = "text-yellow-600 font-medium";
+                  }
+                  
+                  return (
+                    <tr key={product.id} className="hover:bg-gray-50">
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-800">
+                        {product.fieldLocation}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-800">
+                        {product.name}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-800">
+                        {/* Crop needs would be added to schema */}
+                        -
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-800">
+                        <span className={stockClassName}>
+                          {product.currentStock}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-800">
+                        {/* Wash inventory would be added to schema */}
+                        -
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-800">
+                        {product.unit}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-800 max-w-[200px] truncate">
+                        {product.productionNotes || "-"}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-800 max-w-[200px] truncate">
+                        {product.retailNotes || "-"}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">
+                        <div className="flex space-x-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleViewDetails(product)}
+                            className="px-2 py-1 text-xs"
+                          >
+                            Details
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
 
       {/* Product Details Modal */}
       {selectedProduct && (

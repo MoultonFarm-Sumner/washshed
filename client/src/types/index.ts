@@ -16,6 +16,8 @@ export interface ReportItem {
   current: number;
   isLowStock: boolean;
   isCriticalStock: boolean;
+  fieldNotes?: string;
+  retailNotes?: string;
 }
 
 export interface HistoryEntry {

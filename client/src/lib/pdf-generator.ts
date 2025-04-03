@@ -32,13 +32,14 @@ export async function generatePDF(
   // Use the autotable plugin to create inventory table
   (doc as any).autoTable({
     startY: 50,
-    head: [['Product', 'Starting', 'Added', 'Removed', 'Current']],
+    head: [['Field Location', 'Crop', 'Current Stock', 'Units', 'Field Notes', 'Retail Notes']],
     body: reportData.map(item => [
+      item.fieldLocation,
       item.name,
-      `${item.starting} ${item.unit}`,
-      item.added > 0 ? `+${item.added}` : "0",
-      item.removed > 0 ? `-${item.removed}` : "0",
-      `${item.current} ${item.unit}`
+      item.current,
+      item.unit,
+      item.fieldNotes || '-',
+      item.retailNotes || '-'
     ]),
     theme: 'grid',
     headStyles: {
@@ -48,6 +49,14 @@ export async function generatePDF(
     },
     alternateRowStyles: {
       fillColor: [240, 240, 240]
+    },
+    columnStyles: {
+      4: { cellWidth: 'auto' },
+      5: { cellWidth: 'auto' }
+    },
+    styles: {
+      overflow: 'linebreak',
+      cellPadding: 4
     }
   });
   
@@ -61,12 +70,15 @@ export async function generatePDF(
     
     (doc as any).autoTable({
       startY: lowStockY + 4,
-      head: [['Product', 'Field Location', 'Current Stock', 'Status']],
+      head: [['Field Location', 'Crop', 'Current Stock', 'Units', 'Status', 'Field Notes', 'Retail Notes']],
       body: lowStockItems.map(item => [
-        item.name,
         item.fieldLocation,
-        `${item.current} ${item.unit}`,
-        item.isCriticalStock ? 'Critical Stock' : 'Low Stock'
+        item.name,
+        item.current,
+        item.unit,
+        item.isCriticalStock ? 'Critical Stock' : 'Low Stock',
+        item.fieldNotes || '-',
+        item.retailNotes || '-'
       ]),
       theme: 'grid',
       headStyles: {
@@ -78,7 +90,7 @@ export async function generatePDF(
         fillColor: [240, 240, 240]
       },
       columnStyles: {
-        3: {
+        4: {
           fontStyle: 'bold',
           textColor: (data: any) => {
             if (data.cell.raw === 'Critical Stock') {
@@ -86,7 +98,13 @@ export async function generatePDF(
             }
             return [255, 160, 0]; // Yellow
           }
-        }
+        },
+        5: { cellWidth: 'auto' },
+        6: { cellWidth: 'auto' }
+      },
+      styles: {
+        overflow: 'linebreak',
+        cellPadding: 4
       }
     });
   }

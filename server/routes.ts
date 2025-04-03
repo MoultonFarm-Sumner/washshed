@@ -93,56 +93,72 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Allow partial updates
       const validatedData = insertProductSchema.partial().parse(req.body);
       
-      // Detect stock changes for history tracking
-      const hasStockChange = validatedData.currentStock !== undefined && 
-                           validatedData.currentStock !== currentProduct.currentStock;
+      // Detect which fields are changing
+      const fieldsChanged: string[] = [];
       
-      // Keep track of previous stock for history
-      const previousStock = currentProduct.currentStock;
+      // Create a field map
+      const fieldDisplayNames: Record<string, string> = {
+        currentStock: "Current Stock",
+        washInventory: "Wash Inventory",
+        standInventory: "Stand Inventory",
+        harvestBins: "Harvest Bins",
+        unitsHarvested: "Units Harvested",
+        cropNeeds: "Crop Needs"
+      };
+      
+      // Check for stock changes
+      for (const fieldKey of Object.keys(validatedData)) {
+        // Skip non-numeric fields
+        if (!['currentStock', 'washInventory', 'standInventory', 'harvestBins', 'unitsHarvested', 'cropNeeds'].includes(fieldKey)) {
+          continue;
+        }
+        
+        // Get the old and new values
+        const oldValueRaw = (currentProduct as any)[fieldKey];
+        const newValueRaw = (validatedData as any)[fieldKey];
+        
+        // Skip if same value
+        if (oldValueRaw === newValueRaw) {
+          continue;
+        }
+        
+        // Convert to numbers if possible
+        const oldValue = oldValueRaw !== null && oldValueRaw !== undefined ? String(oldValueRaw) : "0";
+        const newValue = newValueRaw !== null && newValueRaw !== undefined ? String(newValueRaw) : "0";
+        
+        const numOldVal = parseInt(oldValue);
+        const numNewVal = parseInt(newValue);
+        
+        // Add to list of changed fields if numeric
+        if (!isNaN(numOldVal) && !isNaN(numNewVal) && numOldVal !== numNewVal) {
+          fieldsChanged.push(fieldKey);
+        }
+      }
       
       // Update the product
       const updatedProduct = await storage.updateProduct(id, validatedData);
       
-      // Create history entry if currentStock changed
-      if (hasStockChange && updatedProduct) {
-        const stockChange = (validatedData.currentStock || 0) - previousStock;
+      // Create history entries for each changed field
+      for (const fieldKey of fieldsChanged) {
+        const oldValue = parseInt(String((currentProduct as any)[fieldKey] || 0));
+        const newValue = parseInt(String((validatedData as any)[fieldKey] || 0));
+        const change = newValue - oldValue;
+        
+        // Get the field display name
+        const fieldDisplayName = fieldDisplayNames[fieldKey] || fieldKey;
+        
+        // Create location string with field name
+        const fieldInfo = `${fieldDisplayName} - ${currentProduct.fieldLocation}`;
         
         // Record the inventory change
         await storage.createInventoryHistory({
           productId: id,
-          previousStock,
-          change: stockChange,
-          newStock: validatedData.currentStock || 0,
-          fieldLocation: currentProduct.fieldLocation,
+          previousStock: oldValue,
+          change: change,
+          newStock: newValue,
+          fieldLocation: fieldInfo, // Field type included here
           updatedBy: "Farm Admin" // TODO: Use actual user when authentication is implemented
         });
-      }
-      
-      // Track inventory field changes for other commonly modified fields
-      const fieldKeysToTrack = ['washInventory', 'standInventory', 'harvestBins', 'unitsHarvested', 'cropNeeds'];
-      
-      for (const field of fieldKeysToTrack) {
-        if (field in validatedData && validatedData[field] !== currentProduct[field]) {
-          const oldValue = currentProduct[field] || "0";
-          const newValue = validatedData[field] || "0";
-          
-          // Try to convert to numbers for numerical fields
-          const numOldVal = parseInt(oldValue);
-          const numNewVal = parseInt(newValue);
-          
-          // Only create history if this is a numerical change
-          if (!isNaN(numOldVal) && !isNaN(numNewVal) && numOldVal !== numNewVal) {
-            // Record the change as an inventory event
-            await storage.createInventoryHistory({
-              productId: id,
-              previousStock: numOldVal,
-              change: numNewVal - numOldVal,
-              newStock: numNewVal,
-              fieldLocation: currentProduct.fieldLocation,
-              updatedBy: "Farm Admin"
-            });
-          }
-        }
       }
       
       // Check if retail notes were updated and send notification if needed

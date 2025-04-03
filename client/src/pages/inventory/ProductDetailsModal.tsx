@@ -43,7 +43,7 @@ export default function ProductDetailsModal({
   const [washInventory, setWashInventory] = useState(product.washInventory || "");
   const [harvestBins, setHarvestBins] = useState(product.harvestBins || "");
   const [unitsHarvested, setUnitsHarvested] = useState(product.unitsHarvested || "");
-  const [currentStock, setCurrentStock] = useState(product.currentStock);
+  // currentStock removed as requested, using washInventory instead
   const [fieldLocation, setFieldLocation] = useState(product.fieldLocation);
   
   // Fetch field locations for dropdown
@@ -56,14 +56,8 @@ export default function ProductDetailsModal({
       return apiRequest("PUT", `/api/products/${product.id}`, updatedProduct);
     },
     onSuccess: async (response) => {
-      // If stock was changed, create inventory history entry
-      if (currentStock !== product.currentStock) {
-        await apiRequest("POST", "/api/inventory/adjust", {
-          productId: product.id,
-          change: currentStock - product.currentStock,
-          updatedBy: "Farm Admin" // In a real app, get the current user
-        });
-      }
+      // No longer tracking current stock changes for inventory history
+      // Using washInventory instead
       
       onProductUpdated();
       onClose();
@@ -90,8 +84,8 @@ export default function ProductDetailsModal({
       washInventory,
       harvestBins,
       unitsHarvested,
-      currentStock,
       fieldLocation
+      // currentStock removed as requested, using washInventory instead
     });
   };
 
@@ -205,17 +199,7 @@ export default function ProductDetailsModal({
           />
         </div>
 
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Current Stock
-          </label>
-          <Input
-            type="number"
-            value={currentStock}
-            onChange={(e) => setCurrentStock(parseInt(e.target.value) || 0)}
-            min={0}
-          />
-        </div>
+        {/* Current Stock field has been removed as requested, using Wash Inventory instead */}
 
         <Button 
           className="w-full bg-primary hover:bg-green-800"

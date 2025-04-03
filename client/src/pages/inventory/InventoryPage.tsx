@@ -258,11 +258,11 @@ export default function InventoryPage() {
                         // Find corresponding Wholesale and Kitchen products if they exist
                         const wholesaleProduct = products.find(p => 
                           p.fieldLocation === "Wholesale" && p.name === product.name
-                        ) || { id: 0, currentStock: 0 };
+                        ) || { id: 0, washInventory: "0" };
                         
                         const kitchenProduct = products.find(p => 
                           p.fieldLocation === "Kitchen" && p.name === product.name
-                        ) || { id: 0, currentStock: 0 };
+                        ) || { id: 0, washInventory: "0" };
                         
                         return (
                           <tr 
@@ -292,7 +292,7 @@ export default function InventoryPage() {
                                       const newWholesaleProduct = {
                                         name: product.name,
                                         fieldLocation: "Wholesale",
-                                        currentStock: 0,
+                                        washInventory: "0", // Using washInventory instead of currentStock
                                         unit: product.unit,
                                         minStock: 0,
                                         retailNotes: product.retailNotes,
@@ -307,10 +307,12 @@ export default function InventoryPage() {
                                       return;
                                     }
                                     
-                                    const newStock = Math.max(0, (parseInt(wholesaleProduct.currentStock?.toString() || "0") - 1));
+                                    // Using washInventory instead of currentStock
+                                    const currentValue = parseInt(wholesaleProduct.washInventory || "0");
+                                    const newValue = Math.max(0, currentValue - 1).toString();
                                     updateProductMutation({
                                       id: wholesaleProduct.id,
-                                      currentStock: newStock
+                                      washInventory: newValue
                                     });
                                   }}
                                 >
@@ -319,9 +321,9 @@ export default function InventoryPage() {
                                 
                                 <Input
                                   className="w-16 h-7 px-1 text-center"
-                                  value={wholesaleProduct.currentStock || 0}
+                                  value={wholesaleProduct.washInventory || "0"}
                                   onChange={(e) => {
-                                    // This would update the stock in a real implementation
+                                    // This would update the wash inventory in a real implementation
                                   }}
                                   onClick={(e) => e.stopPropagation()}
                                   readOnly={wholesaleProduct.id === 0}
@@ -338,7 +340,7 @@ export default function InventoryPage() {
                                       const newWholesaleProduct = {
                                         name: product.name,
                                         fieldLocation: "Wholesale",
-                                        currentStock: 1,
+                                        washInventory: "1", // Using washInventory instead of currentStock
                                         unit: product.unit,
                                         minStock: 0,
                                         retailNotes: product.retailNotes,
@@ -353,10 +355,12 @@ export default function InventoryPage() {
                                       return;
                                     }
                                     
-                                    const newStock = (parseInt(wholesaleProduct.currentStock?.toString() || "0") + 1);
+                                    // Using washInventory instead of currentStock
+                                    const currentValue = parseInt(wholesaleProduct.washInventory || "0");
+                                    const newValue = (currentValue + 1).toString();
                                     updateProductMutation({
                                       id: wholesaleProduct.id,
-                                      currentStock: newStock
+                                      washInventory: newValue
                                     });
                                   }}
                                 >
@@ -379,7 +383,7 @@ export default function InventoryPage() {
                                       const newKitchenProduct = {
                                         name: product.name,
                                         fieldLocation: "Kitchen",
-                                        currentStock: 0,
+                                        washInventory: "0", // Using washInventory instead of currentStock
                                         unit: product.unit,
                                         minStock: 0,
                                         retailNotes: product.retailNotes,
@@ -394,10 +398,12 @@ export default function InventoryPage() {
                                       return;
                                     }
                                     
-                                    const newStock = Math.max(0, (parseInt(kitchenProduct.currentStock?.toString() || "0") - 1));
+                                    // Using washInventory instead of currentStock
+                                    const currentValue = parseInt(kitchenProduct.washInventory || "0");
+                                    const newValue = Math.max(0, currentValue - 1).toString();
                                     updateProductMutation({
                                       id: kitchenProduct.id,
-                                      currentStock: newStock
+                                      washInventory: newValue
                                     });
                                   }}
                                 >
@@ -406,9 +412,9 @@ export default function InventoryPage() {
                                 
                                 <Input
                                   className="w-16 h-7 px-1 text-center"
-                                  value={kitchenProduct.currentStock || 0}
+                                  value={kitchenProduct.washInventory || "0"}
                                   onChange={(e) => {
-                                    // This would update the stock in a real implementation
+                                    // This would update the wash inventory in a real implementation
                                   }}
                                   onClick={(e) => e.stopPropagation()}
                                   readOnly={kitchenProduct.id === 0}
@@ -425,7 +431,7 @@ export default function InventoryPage() {
                                       const newKitchenProduct = {
                                         name: product.name,
                                         fieldLocation: "Kitchen",
-                                        currentStock: 1,
+                                        washInventory: "1", // Using washInventory instead of currentStock
                                         unit: product.unit,
                                         minStock: 0,
                                         retailNotes: product.retailNotes,
@@ -440,10 +446,12 @@ export default function InventoryPage() {
                                       return;
                                     }
                                     
-                                    const newStock = (parseInt(kitchenProduct.currentStock?.toString() || "0") + 1);
+                                    // Using washInventory instead of currentStock
+                                    const currentValue = parseInt(kitchenProduct.washInventory || "0");
+                                    const newValue = (currentValue + 1).toString();
                                     updateProductMutation({
                                       id: kitchenProduct.id,
-                                      currentStock: newStock
+                                      washInventory: newValue
                                     });
                                   }}
                                 >

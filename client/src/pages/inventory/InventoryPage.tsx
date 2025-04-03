@@ -29,7 +29,7 @@ export default function InventoryPage() {
     isLoading,
     error,
   } = useQuery<Product[]>({
-    queryKey: ["/api/products"],
+    queryKey: ["/api/products", "?includeWholesaleKitchen=true"],
   });
 
   // Get all unique field locations for filter dropdown
@@ -45,7 +45,7 @@ export default function InventoryPage() {
       return Promise.resolve({ success: true });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/products", "?includeWholesaleKitchen=true"] });
       toast({
         title: "Order Updated",
         description: "Product order has been updated successfully",

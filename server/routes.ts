@@ -16,10 +16,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // API routes - prefix all with /api
   
   // Products routes
-  app.get("/api/products", async (_req: Request, res: Response) => {
+  app.get("/api/products", async (req: Request, res: Response) => {
     try {
+      const includeWholesaleKitchen = req.query.includeWholesaleKitchen === 'true';
       const products = await storage.getProducts();
-      res.json(products);
+      
+      // Filter out Wholesale/Kitchen products unless explicitly requested
+      // Only the Inventory page will set includeWholesaleKitchen=true
+      const filteredProducts = includeWholesaleKitchen
+        ? products
+        : products.filter(p => !["Wholesale", "Kitchen"].includes(p.fieldLocation));
+      
+      res.json(filteredProducts);
     } catch (error) {
       res.status(500).json({ message: "Failed to get products" });
     }
@@ -166,6 +174,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const startDateParam = req.query.startDate as string;
       const endDateParam = req.query.endDate as string;
       const productIdParam = req.query.productId as string;
+      const includeWholesaleKitchen = req.query.includeWholesaleKitchen === 'true';
       
       let history;
       
@@ -191,13 +200,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const products = await storage.getProducts();
       const productMap = new Map(products.map(p => [p.id, p]));
       
-      const enrichedHistory = history.map(entry => ({
+      let enrichedHistory = history.map(entry => ({
         ...entry,
         productName: productMap.get(entry.productId)?.name || 'Unknown Product',
         // Use field location stored in history if available, otherwise use current product location
         fieldLocation: entry.fieldLocation || productMap.get(entry.productId)?.fieldLocation || 'Unknown Location',
         unit: productMap.get(entry.productId)?.unit || ''
       }));
+      
+      // Filter out Wholesale/Kitchen entries unless explicitly requested
+      if (!includeWholesaleKitchen) {
+        enrichedHistory = enrichedHistory.filter(entry => 
+          !["Wholesale", "Kitchen"].includes(entry.fieldLocation)
+        );
+      }
       
       res.json(enrichedHistory);
     } catch (error) {

@@ -40,13 +40,27 @@ export default function InventoryTable({ products, onViewDetails }: Props) {
 
   // Update local state before sending to server
   const handleFieldChange = (productId: number, field: string, value: any) => {
-    setEditableValues(prev => ({
-      ...prev,
-      [productId]: {
-        ...(prev[productId] || {}),
-        [field]: value
+    setEditableValues(prev => {
+      // If washInventory is changing, also update currentStock
+      if (field === "washInventory") {
+        return {
+          ...prev,
+          [productId]: {
+            ...(prev[productId] || {}),
+            [field]: value,
+            currentStock: value
+          }
+        };
       }
-    }));
+      
+      return {
+        ...prev,
+        [productId]: {
+          ...(prev[productId] || {}),
+          [field]: value
+        }
+      };
+    });
   };
 
   // When losing focus, update the server
@@ -60,11 +74,27 @@ export default function InventoryTable({ products, onViewDetails }: Props) {
       return;
     }
 
-    updateProduct({
-      id: product.id,
-      field,
-      value
-    });
+    // If washInventory is being updated, also update currentStock
+    if (field === "washInventory") {
+      updateProduct({
+        id: product.id,
+        field,
+        value
+      });
+      
+      // Also update the currentStock field
+      updateProduct({
+        id: product.id,
+        field: "currentStock",
+        value
+      });
+    } else {
+      updateProduct({
+        id: product.id,
+        field,
+        value
+      });
+    }
   };
 
   // Function to handle inventory increment/decrement
@@ -74,11 +104,28 @@ export default function InventoryTable({ products, onViewDetails }: Props) {
     const newValue = Math.max(0, currentValue + change).toString();
     
     handleFieldChange(product.id, field, newValue);
-    updateProduct({
-      id: product.id,
-      field,
-      value: newValue
-    });
+    
+    // If washInventory is being updated, also update currentStock to match
+    if (field === "washInventory") {
+      handleFieldChange(product.id, "currentStock", newValue);
+      updateProduct({
+        id: product.id,
+        field,
+        value: newValue
+      });
+      // Also update the currentStock field
+      updateProduct({
+        id: product.id,
+        field: "currentStock",
+        value: newValue
+      });
+    } else {
+      updateProduct({
+        id: product.id,
+        field,
+        value: newValue
+      });
+    }
   };
 
   // Get the display value for a field, either from editableValues or the original product
@@ -99,12 +146,15 @@ export default function InventoryTable({ products, onViewDetails }: Props) {
   const renderNumericField = (product: Product, field: string) => {
     const value = getDisplayValue(product, field);
     
+    // Special styling for wash inventory field
+    const isWashInventory = field === "washInventory";
+    
     return (
       <div className="flex items-center space-x-2">
         <Button
-          variant="outline"
+          variant={isWashInventory ? "default" : "outline"}
           size="icon"
-          className="h-6 w-6 rounded-full p-0"
+          className={`h-6 w-6 rounded-full p-0 ${isWashInventory ? "bg-blue-500 hover:bg-blue-600" : ""}`}
           onClick={(e) => {
             e.stopPropagation();
             handleInventoryChange(product, field, -1);
@@ -113,16 +163,16 @@ export default function InventoryTable({ products, onViewDetails }: Props) {
           <Minus className="h-3 w-3" />
         </Button>
         <Input
-          className="w-16 h-7 px-1 text-center"
+          className={`w-16 h-7 px-1 text-center ${isWashInventory ? "border-blue-400 font-medium" : ""}`}
           value={value}
           onChange={(e) => handleFieldChange(product.id, field, e.target.value)}
           onBlur={() => handleFieldBlur(product, field)}
           onClick={(e) => e.stopPropagation()}
         />
         <Button
-          variant="outline"
+          variant={isWashInventory ? "default" : "outline"}
           size="icon"
-          className="h-6 w-6 rounded-full p-0"
+          className={`h-6 w-6 rounded-full p-0 ${isWashInventory ? "bg-blue-500 hover:bg-blue-600" : ""}`}
           onClick={(e) => {
             e.stopPropagation();
             handleInventoryChange(product, field, 1);
@@ -166,8 +216,8 @@ export default function InventoryTable({ products, onViewDetails }: Props) {
             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Stand Inventory
             </th>
-            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Wash Inventory
+            <th className="px-4 py-3 text-left text-xs font-medium text-blue-600 uppercase tracking-wider font-bold">
+              Wash Inventory (Stock)
             </th>
             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Harvest Bins
@@ -205,7 +255,7 @@ export default function InventoryTable({ products, onViewDetails }: Props) {
               <td className="px-4 py-3 whitespace-nowrap text-sm">
                 {renderNumericField(product, "standInventory")}
               </td>
-              <td className="px-4 py-3 whitespace-nowrap text-sm">
+              <td className="px-4 py-3 whitespace-nowrap text-sm bg-blue-50 border-l-2 border-r-2 border-blue-400">
                 {renderNumericField(product, "washInventory")}
               </td>
               <td className="px-4 py-3 whitespace-nowrap text-sm">

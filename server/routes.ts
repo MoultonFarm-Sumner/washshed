@@ -54,7 +54,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/products", async (req: Request, res: Response) => {
     try {
       const validatedData = insertProductSchema.parse(req.body);
+      console.log("Validated product data:", validatedData);
+      
+      // Make sure unit field is present with a default value if not provided
+      if (!validatedData.unit) {
+        validatedData.unit = "unit";
+      }
+      
       const product = await storage.createProduct(validatedData);
+      console.log("Created product:", product);
       
       // Add initial inventory history entry
       await storage.createInventoryHistory({
@@ -62,18 +70,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         previousStock: 0,
         change: product.currentStock,
         newStock: product.currentStock,
+        fieldLocation: product.fieldLocation,
         updatedBy: "Farm Admin" // TODO: Use actual user when authentication is implemented
       });
       
       res.status(201).json(product);
     } catch (error) {
+      console.error("Error creating product:", error);
       if (error instanceof z.ZodError) {
         return res.status(400).json({ 
           message: "Invalid product data", 
           errors: error.errors 
         });
       }
-      res.status(500).json({ message: "Failed to create product" });
+      res.status(500).json({ message: "Failed to create product: " + (error as Error).message });
     }
   });
 

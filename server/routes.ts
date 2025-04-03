@@ -7,6 +7,7 @@ import {
   insertInventoryHistorySchema, 
   insertFieldLocationSchema 
 } from "@shared/schema";
+import { emailSettings } from "./emailSettings";
 
 // Use the PostgreSQL storage implementation
 const storage = new PgStorage();
@@ -243,6 +244,117 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(204).end();
     } catch (error) {
       res.status(500).json({ message: "Failed to delete field location" });
+    }
+  });
+
+  // Email settings routes
+  app.get("/api/settings/email", (_req: Request, res: Response) => {
+    try {
+      const settings = emailSettings.getSettings();
+      res.json(settings);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to get email settings" });
+    }
+  });
+
+  app.post("/api/settings/email", (req: Request, res: Response) => {
+    try {
+      const schema = z.object({
+        email: z.string().email(),
+        notifyOnRetailNotes: z.boolean().default(true)
+      });
+      
+      const { email, notifyOnRetailNotes } = schema.parse(req.body);
+      
+      const settings = emailSettings.updateSettings({
+        notificationEmail: email,
+        notifyOnRetailNotes
+      });
+      
+      res.json(settings);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Invalid email settings", 
+          errors: error.errors 
+        });
+      }
+      res.status(500).json({ message: "Failed to update email settings" });
+    }
+  });
+
+  app.post("/api/settings/test-email", async (req: Request, res: Response) => {
+    try {
+      const schema = z.object({
+        email: z.string().email()
+      });
+      
+      const { email } = schema.parse(req.body);
+      
+      // Update the email temporarily for the test
+      emailSettings.updateSettings({ notificationEmail: email });
+      
+      const success = await emailSettings.sendTestEmail();
+      
+      if (success) {
+        res.json({ message: "Test email sent successfully" });
+      } else {
+        res.status(500).json({ message: "Failed to send test email" });
+      }
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Invalid email address", 
+          errors: error.errors 
+        });
+      }
+      res.status(500).json({ message: "Failed to send test email" });
+    }
+  });
+
+  // Retail notes notification
+  app.put("/api/products/:id", async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid product ID" });
+      }
+      
+      // Allow partial updates
+      const validatedData = insertProductSchema.partial().parse(req.body);
+      
+      const oldProduct = await storage.getProduct(id);
+      if (!oldProduct) {
+        return res.status(404).json({ message: "Product not found" });
+      }
+
+      const updatedProduct = await storage.updateProduct(id, validatedData);
+      
+      // Check if retail notes were updated and send notification if needed
+      const settings = emailSettings.getSettings();
+      if (
+        updatedProduct &&
+        settings.notifyOnRetailNotes && 
+        settings.notificationEmail && 
+        'retailNotes' in validatedData && 
+        validatedData.retailNotes !== oldProduct.retailNotes
+      ) {
+        // Send notification about retail notes update
+        await emailSettings.sendEmailNotification(
+          `Retail Notes Updated for ${updatedProduct.name}`,
+          `Retail notes have been updated for ${updatedProduct.name}.\n\nPrevious notes: ${oldProduct.retailNotes || 'None'}\n\nNew notes: ${validatedData.retailNotes || 'None'}`
+        );
+      }
+      
+      res.json(updatedProduct);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Invalid product data", 
+          errors: error.errors 
+        });
+      }
+      res.status(500).json({ message: "Failed to update product" });
     }
   });
 

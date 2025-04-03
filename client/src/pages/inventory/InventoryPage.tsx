@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { Search, MapPin, SortAsc } from "lucide-react";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { Search, MapPin, SortAsc, Plus, Minus } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/select";
 import { Product } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
-import InventoryCard from "./InventoryCard";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import ProductDetailsModal from "./ProductDetailsModal";
 import AddProductModal from "./AddProductModal";
 
@@ -24,6 +24,7 @@ export default function InventoryPage() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("field"); // 'field' or 'wholesale'
 
   // Fetch products
   const { data: products = [], isLoading, error, refetch } = useQuery<Product[]>({
@@ -34,6 +35,60 @@ export default function InventoryPage() {
   const { data: fieldLocations = [] } = useQuery<any[]>({
     queryKey: ["/api/field-locations"],
   });
+
+  // Mutation for updating wash inventory 
+  const { mutate: updateWashInventory } = useMutation({
+    mutationFn: ({ id, value }: { id: number, value: string }) => {
+      return apiRequest("PUT", `/api/products/${id}`, {
+        washInventory: value
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to update wash inventory",
+        variant: "destructive",
+      });
+    }
+  });
+
+  // Mutation for updating product field location
+  const { mutate: updateFieldLocation } = useMutation({
+    mutationFn: ({ id, fieldLocation }: { id: number, fieldLocation: string }) => {
+      return apiRequest("PUT", `/api/products/${id}`, {
+        fieldLocation
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to update field location",
+        variant: "destructive",
+      });
+    }
+  });
+
+  // Function to handle wash inventory increment/decrement
+  const handleWashInventoryChange = (product: Product, change: number) => {
+    const currentValue = product.washInventory ? parseInt(product.washInventory) : 0;
+    const newValue = Math.max(0, currentValue + change).toString();
+    updateWashInventory({ id: product.id, value: newValue });
+  };
+
+  // Function to handle field location change
+  const handleFieldLocationChange = (product: Product) => {
+    // Prompt for new field location
+    const newLocation = prompt("Enter new field location:", product.fieldLocation);
+    if (newLocation && newLocation !== product.fieldLocation) {
+      updateFieldLocation({ id: product.id, fieldLocation: newLocation });
+    }
+  };
 
   // Filter and sort products
   const filteredProducts = products
@@ -82,14 +137,6 @@ export default function InventoryPage() {
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <h2 className="text-2xl font-medium text-gray-800">Current Inventory</h2>
         <div className="flex flex-wrap gap-2 items-center">
-          <div className="flex items-center mr-4">
-            <span className="inline-block w-4 h-4 bg-yellow-400 rounded-full mr-2"></span>
-            <span className="text-sm">Low Stock (&lt;10)</span>
-          </div>
-          <div className="flex items-center mr-4">
-            <span className="inline-block w-4 h-4 bg-red-500 rounded-full mr-2"></span>
-            <span className="text-sm">Critical Stock (&lt;5)</span>
-          </div>
           <Button 
             className="bg-blue-600 hover:bg-blue-700" 
             onClick={() => setIsAddModalOpen(true)}
@@ -97,6 +144,30 @@ export default function InventoryPage() {
             Add New Item
           </Button>
         </div>
+      </div>
+
+      {/* Tab Navigation */}
+      <div className="flex border-b border-gray-200 mb-6">
+        <button
+          onClick={() => setActiveTab("field")}
+          className={`py-2 px-4 text-sm font-medium ${
+            activeTab === "field"
+              ? "border-b-2 border-blue-500 text-blue-600"
+              : "text-gray-500 hover:text-gray-700 hover:border-gray-300"
+          }`}
+        >
+          Field & Wash Shed
+        </button>
+        <button
+          onClick={() => setActiveTab("wholesale")}
+          className={`py-2 px-4 text-sm font-medium ${
+            activeTab === "wholesale"
+              ? "border-b-2 border-blue-500 text-blue-600"
+              : "text-gray-500 hover:text-gray-700 hover:border-gray-300"
+          }`}
+        >
+          Wholesale & Kitchen
+        </button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
@@ -162,7 +233,7 @@ export default function InventoryPage() {
               </p>
             )}
           </div>
-        ) : (
+        ) : activeTab === "field" ? (
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
@@ -195,28 +266,25 @@ export default function InventoryPage() {
                     Field Notes
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Retail Notes
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredProducts.map((product: Product) => {
-                  const isLowStock = product.currentStock < 10;
-                  const isCriticalStock = product.currentStock < 5;
-                  let stockClassName = "";
-                  
-                  if (isCriticalStock) {
-                    stockClassName = "text-red-500 font-medium";
-                  } else if (isLowStock) {
-                    stockClassName = "text-yellow-600 font-medium";
-                  }
-                  
                   return (
-                    <tr key={product.id} className="hover:bg-gray-50">
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-800">
+                    <tr 
+                      key={product.id} 
+                      className="hover:bg-gray-100 cursor-pointer"
+                      onClick={() => handleViewDetails(product)}
+                    >
+                      <td 
+                        className="px-4 py-3 whitespace-nowrap text-sm text-gray-800 hover:bg-blue-50"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleFieldLocationChange(product);
+                        }}
+                      >
                         {product.fieldLocation}
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-800">
@@ -226,12 +294,36 @@ export default function InventoryPage() {
                         {product.cropNeeds || "-"}
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-800">
-                        <span className={stockClassName}>
-                          {product.standInventory || product.currentStock}
-                        </span>
+                        {product.standInventory || product.currentStock}
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-800">
-                        {product.washInventory || "-"}
+                        <div className="flex items-center space-x-2">
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-6 w-6 rounded-full p-0"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleWashInventoryChange(product, -1);
+                            }}
+                          >
+                            <Minus className="h-3 w-3" />
+                          </Button>
+                          <span>
+                            {product.washInventory || "0"}
+                          </span>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-6 w-6 rounded-full p-0"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleWashInventoryChange(product, 1);
+                            }}
+                          >
+                            <Plus className="h-3 w-3" />
+                          </Button>
+                        </div>
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-800">
                         {product.harvestBins || "-"}
@@ -245,20 +337,135 @@ export default function InventoryPage() {
                       <td className="px-4 py-3 text-sm text-gray-800 max-w-[200px] truncate">
                         {product.fieldNotes || "-"}
                       </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleViewDetails(product);
+                          }}
+                          className="px-2 py-1 text-xs"
+                        >
+                          Details
+                        </Button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Product
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Wash Inventory
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Wholesale Amount
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Kitchen Amount
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Units
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Retail Notes
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filteredProducts.map((product: Product) => {
+                  // Placeholder values for wholesale & kitchen
+                  const wholesale = "0";
+                  const kitchen = "0";
+                  
+                  return (
+                    <tr 
+                      key={product.id} 
+                      className="hover:bg-gray-100 cursor-pointer"
+                      onClick={() => handleViewDetails(product)}
+                    >
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-800">
+                        {product.name}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-800">
+                        {product.washInventory || "0"}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-800">
+                        <div className="flex items-center space-x-2">
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-6 w-6 rounded-full p-0"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <Minus className="h-3 w-3" />
+                          </Button>
+                          <span>
+                            {wholesale}
+                          </span>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-6 w-6 rounded-full p-0"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <Plus className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-800">
+                        <div className="flex items-center space-x-2">
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-6 w-6 rounded-full p-0"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <Minus className="h-3 w-3" />
+                          </Button>
+                          <span>
+                            {kitchen}
+                          </span>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-6 w-6 rounded-full p-0"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <Plus className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-800">
+                        {product.unit}
+                      </td>
                       <td className="px-4 py-3 text-sm text-gray-800 max-w-[200px] truncate">
                         {product.retailNotes || "-"}
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">
-                        <div className="flex space-x-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleViewDetails(product)}
-                            className="px-2 py-1 text-xs"
-                          >
-                            Details
-                          </Button>
-                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleViewDetails(product);
+                          }}
+                          className="px-2 py-1 text-xs"
+                        >
+                          Details
+                        </Button>
                       </td>
                     </tr>
                   );

@@ -85,6 +85,23 @@ export default function InventoryPage() {
       });
     }
   });
+  
+  // Create a new product
+  const { mutate: addProductMutation } = useMutation({
+    mutationFn: (productData: Partial<Product>) => {
+      return apiRequest("POST", "/api/products", productData);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to create product",
+        variant: "destructive",
+      });
+    }
+  });
 
   // Handle product reordering via drag and drop
   const handleProductsReordered = (reorderedProducts: Product[]) => {
@@ -229,7 +246,7 @@ export default function InventoryPage() {
                         Kitchen Count
                       </th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Field Notes
+                        Retail Notes
                       </th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Actions
@@ -274,10 +291,19 @@ export default function InventoryPage() {
                                     
                                     // If this product doesn't have a wholesale entry yet, create one
                                     if (wholesaleProduct.id === 0) {
-                                      // This would create a new wholesale product entry in a real implementation
+                                      const newWholesaleProduct = {
+                                        name: product.name,
+                                        fieldLocation: "Wholesale",
+                                        currentStock: 0,
+                                        unit: product.unit,
+                                        minStock: 0,
+                                        retailNotes: product.retailNotes,
+                                      };
+                                      
+                                      addProductMutation(newWholesaleProduct);
                                       toast({
-                                        title: "Action Required",
-                                        description: "Please create a Wholesale entry for this crop first",
+                                        title: "Wholesale Entry Created",
+                                        description: `Created wholesale entry for ${product.name}`,
                                       });
                                       return;
                                     }
@@ -310,10 +336,19 @@ export default function InventoryPage() {
                                     e.stopPropagation();
                                     
                                     if (wholesaleProduct.id === 0) {
-                                      // This would create a new wholesale product entry in a real implementation
+                                      const newWholesaleProduct = {
+                                        name: product.name,
+                                        fieldLocation: "Wholesale",
+                                        currentStock: 1,
+                                        unit: product.unit,
+                                        minStock: 0,
+                                        retailNotes: product.retailNotes,
+                                      };
+                                      
+                                      addProductMutation(newWholesaleProduct);
                                       toast({
-                                        title: "Action Required",
-                                        description: "Please create a Wholesale entry for this crop first",
+                                        title: "Wholesale Entry Created",
+                                        description: `Created wholesale entry for ${product.name}`,
                                       });
                                       return;
                                     }
@@ -341,9 +376,19 @@ export default function InventoryPage() {
                                     e.stopPropagation();
                                     
                                     if (kitchenProduct.id === 0) {
+                                      const newKitchenProduct = {
+                                        name: product.name,
+                                        fieldLocation: "Kitchen",
+                                        currentStock: 0,
+                                        unit: product.unit,
+                                        minStock: 0,
+                                        retailNotes: product.retailNotes,
+                                      };
+                                      
+                                      addProductMutation(newKitchenProduct);
                                       toast({
-                                        title: "Action Required",
-                                        description: "Please create a Kitchen entry for this crop first",
+                                        title: "Kitchen Entry Created", 
+                                        description: `Created kitchen entry for ${product.name}`,
                                       });
                                       return;
                                     }
@@ -376,9 +421,19 @@ export default function InventoryPage() {
                                     e.stopPropagation();
                                     
                                     if (kitchenProduct.id === 0) {
+                                      const newKitchenProduct = {
+                                        name: product.name,
+                                        fieldLocation: "Kitchen",
+                                        currentStock: 1,
+                                        unit: product.unit,
+                                        minStock: 0,
+                                        retailNotes: product.retailNotes,
+                                      };
+                                      
+                                      addProductMutation(newKitchenProduct);
                                       toast({
-                                        title: "Action Required",
-                                        description: "Please create a Kitchen entry for this crop first",
+                                        title: "Kitchen Entry Created",
+                                        description: `Created kitchen entry for ${product.name}`,
                                       });
                                       return;
                                     }
@@ -396,7 +451,7 @@ export default function InventoryPage() {
                             </td>
                             
                             <td className="px-4 py-3 text-sm text-gray-900 max-w-xs truncate">
-                              {product.fieldNotes || "No notes"}
+                              {product.retailNotes || "No retail notes"}
                             </td>
                             <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">
                               <Button

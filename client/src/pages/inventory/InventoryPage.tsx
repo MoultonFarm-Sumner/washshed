@@ -71,7 +71,7 @@ export default function InventoryPage() {
         }
       }
       
-      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/products", "?includeWholesaleKitchen=true"] });
       toast({
         title: "Updated",
         description: "Product updated successfully",
@@ -92,7 +92,7 @@ export default function InventoryPage() {
       return apiRequest("POST", "/api/products", productData);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/products", "?includeWholesaleKitchen=true"] });
     },
     onError: () => {
       toast({
@@ -129,7 +129,7 @@ export default function InventoryPage() {
 
   // When a product is updated
   const handleProductUpdated = () => {
-    queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+    queryClient.invalidateQueries({ queryKey: ["/api/products", "?includeWholesaleKitchen=true"] });
   };
 
   if (isLoading) {
@@ -252,16 +252,23 @@ export default function InventoryPage() {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {filteredProducts
+                    {/* Get unique crop names */}
+                    {Array.from(new Set(filteredProducts
                       .filter(p => !["Wholesale", "Kitchen"].includes(p.fieldLocation))
-                      .map((product) => {
+                      .map(p => p.name)))
+                      .map((cropName) => {
+                        // Get the main product for this crop
+                        const product = filteredProducts.find(p => 
+                          p.name === cropName && !["Wholesale", "Kitchen"].includes(p.fieldLocation)
+                        )!;
+                        
                         // Find corresponding Wholesale and Kitchen products if they exist
                         const wholesaleProduct = products.find(p => 
-                          p.fieldLocation === "Wholesale" && p.name === product.name
+                          p.fieldLocation === "Wholesale" && p.name === cropName
                         ) || { id: 0, washInventory: "0" };
                         
                         const kitchenProduct = products.find(p => 
-                          p.fieldLocation === "Kitchen" && p.name === product.name
+                          p.fieldLocation === "Kitchen" && p.name === cropName
                         ) || { id: 0, washInventory: "0" };
                         
                         return (

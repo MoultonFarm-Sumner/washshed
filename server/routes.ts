@@ -375,7 +375,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/settings/email", (req: Request, res: Response) => {
     try {
       const schema = z.object({
-        email: z.string().email(),
+        notificationEmail: z.string().email(),
         notifyOnRetailNotes: z.boolean().default(true),
         useSmtp: z.boolean().optional(),
         smtpServer: z.string().optional(),
@@ -386,7 +386,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       
       const { 
-        email, 
+        notificationEmail, 
         notifyOnRetailNotes, 
         useSmtp, 
         smtpServer, 
@@ -397,7 +397,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } = schema.parse(req.body);
       
       const settings = emailSettings.updateSettings({
-        notificationEmail: email,
+        notificationEmail,
         notifyOnRetailNotes,
         ...(useSmtp !== undefined && { useSmtp }),
         ...(smtpServer !== undefined && { smtpServer }),

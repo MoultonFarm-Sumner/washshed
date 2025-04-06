@@ -2,6 +2,9 @@
 // This is a simple in-memory storage for email notification settings
 // In a production environment, this would be stored in a database
 
+import nodemailer from 'nodemailer';
+import type { Transporter } from 'nodemailer';
+
 interface EmailSettings {
   notificationEmail: string;
   notifyOnRetailNotes: boolean;
@@ -24,6 +27,8 @@ class EmailSettingsManager {
     smtpFromEmail: '',
     useSmtp: false
   };
+  
+  private smtpTransporter: Transporter | null = null;
 
   getSettings(): EmailSettings {
     return { ...this.settings };
@@ -34,14 +39,47 @@ class EmailSettingsManager {
       ...this.settings,
       ...settings
     };
+    
+    // Reset transporter when settings change
+    this.smtpTransporter = null;
+    
     return { ...this.settings };
   }
 
   isConfigured(): boolean {
     return Boolean(this.settings.notificationEmail);
   }
+  
+  isSmtpConfigured(): boolean {
+    return this.settings.useSmtp && 
+           Boolean(this.settings.smtpServer) && 
+           Boolean(this.settings.smtpPort) &&
+           Boolean(this.settings.smtpFromEmail);
+  }
+  
+  private getSmtpTransporter(): Transporter {
+    if (!this.smtpTransporter && this.isSmtpConfigured()) {
+      const transportConfig: any = {
+        host: this.settings.smtpServer,
+        port: this.settings.smtpPort,
+        secure: this.settings.smtpPort === 465, // true for 465, false for other ports
+      };
+      
+      // Add authentication if username/password are provided
+      if (this.settings.smtpUsername && this.settings.smtpPassword) {
+        transportConfig.auth = {
+          user: this.settings.smtpUsername,
+          pass: this.settings.smtpPassword,
+        };
+      }
+      
+      this.smtpTransporter = nodemailer.createTransport(transportConfig);
+    }
+    
+    return this.smtpTransporter as Transporter;
+  }
 
-  // Send email via SMTP or SendGrid API
+  // Send email via SMTP or fallback to console log
   async sendEmailNotification(subject: string, message: string): Promise<boolean> {
     if (!this.isConfigured()) {
       console.log("Email notification not sent: No email configured");
@@ -49,20 +87,23 @@ class EmailSettingsManager {
     }
 
     try {
-      if (this.settings.useSmtp && this.settings.smtpServer) {
-        // SMTP implementation would go here in future
-        console.log(`[EMAIL NOTIFICATION - SMTP]
-To: ${this.settings.notificationEmail}
-From: ${this.settings.smtpFromEmail}
-Subject: ${subject}
-Server: ${this.settings.smtpServer}:${this.settings.smtpPort}
-
-${message}
-        `);
+      if (this.isSmtpConfigured()) {
+        // Use SMTP to send email
+        const transporter = this.getSmtpTransporter();
+        
+        const info = await transporter.sendMail({
+          from: this.settings.smtpFromEmail,
+          to: this.settings.notificationEmail,
+          subject: subject,
+          text: message,
+          html: message.replace(/\n/g, '<br>')
+        });
+        
+        console.log(`[EMAIL SENT] Message ID: ${info.messageId}`);
         return true;
       } else {
-        // Log email for now, but SendGrid will be used once configured
-        console.log(`[EMAIL NOTIFICATION - SendGrid]
+        // Fallback to console logging
+        console.log(`[EMAIL NOTIFICATION - CONSOLE ONLY]
 To: ${this.settings.notificationEmail}
 Subject: ${subject}
 

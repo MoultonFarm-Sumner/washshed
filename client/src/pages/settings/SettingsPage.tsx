@@ -140,7 +140,7 @@ export default function SettingsPage() {
       
       // Save all email settings including SMTP
       saveEmailSettings({
-        email: notificationEmail, // Use 'email' to match server-side validation schema
+        notificationEmail, // This matches the server-side EmailSettings interface
         notifyOnRetailNotes,
         useSmtp,
         smtpServer,

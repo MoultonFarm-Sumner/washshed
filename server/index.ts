@@ -11,7 +11,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
 // Apply authentication middleware to API routes except for auth-related ones
-app.use(/^\/api(?!\/auth\/check|\/auth\/login).*/, requireAuth);
+app.use(/^\/api(?!\/auth\/check|\/auth\/login|\/auth\/logout).*/, requireAuth);
 
 app.use((req, res, next) => {
   const start = Date.now();

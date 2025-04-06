@@ -61,6 +61,16 @@ export async function initializeDatabase() {
       )
     `);
     
+    // Create site_auth table if it doesn't exist
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS site_auth (
+        id SERIAL PRIMARY KEY,
+        password_hash TEXT NOT NULL,
+        created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+      )
+    `);
+    
     // Insert default field locations if they don't exist
     const defaultLocations = [
       'Stone Wall',
@@ -82,6 +92,34 @@ export async function initializeDatabase() {
         'INSERT INTO field_locations (name) VALUES ($1) ON CONFLICT (name) DO NOTHING',
         [location]
       );
+    }
+    
+    // Create settings table if it doesn't exist
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS settings (
+        id SERIAL PRIMARY KEY,
+        key TEXT NOT NULL UNIQUE,
+        value JSONB NOT NULL,
+        created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+      )
+    `);
+    
+    // Set default site password if none exists
+    const { hashPassword } = await import('./auth');
+    const passwordResult = await pool.query('SELECT COUNT(*) FROM site_auth');
+    const passwordCount = parseInt(passwordResult.rows[0].count);
+    
+    if (passwordCount === 0) {
+      // Create default password
+      const defaultPassword = "Wa$h$eh2793915";
+      const defaultPasswordHash = hashPassword(defaultPassword);
+      
+      await pool.query(
+        'INSERT INTO site_auth (password_hash) VALUES ($1)',
+        [defaultPasswordHash]
+      );
+      console.log('Default site password created');
     }
     
     console.log('Database initialized successfully!');

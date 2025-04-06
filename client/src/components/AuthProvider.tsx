@@ -1,5 +1,6 @@
 import { createContext, useState, useContext, useEffect, ReactNode } from 'react';
 import { useToast } from "@/hooks/use-toast";
+import { useLocation } from "wouter";
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -35,10 +36,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const { toast } = useToast();
   
-  // Check authentication status on initial load
+  // Check authentication status on initial load and whenever the location changes
+  const [location] = useLocation();
+  
   useEffect(() => {
     checkAuthStatus();
-  }, []);
+  }, [location]);
   
   const checkAuthStatus = async () => {
     try {

@@ -1,4 +1,5 @@
 import { Switch, Route, Redirect, useLocation } from "wouter";
+import { useEffect } from "react";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -18,7 +19,14 @@ import { AuthProvider, useAuth } from "@/components/AuthProvider";
 // Protected route component
 function ProtectedRoute({ component: Component, ...rest }: { component: React.ComponentType<any>, path?: string }) {
   const { isAuthenticated, isProtected, isLoading } = useAuth();
-  const [location] = useLocation();
+  const [_, navigate] = useLocation();
+  
+  useEffect(() => {
+    // Only redirect if not loading and authentication is required but not present
+    if (!isLoading && isProtected && !isAuthenticated) {
+      navigate("/login");
+    }
+  }, [isAuthenticated, isProtected, isLoading, navigate]);
   
   if (isLoading) {
     // Show loading state while checking authentication
@@ -28,8 +36,10 @@ function ProtectedRoute({ component: Component, ...rest }: { component: React.Co
   }
   
   if (isProtected && !isAuthenticated) {
-    // Redirect to login if not authenticated
-    return <Redirect to="/login" />;
+    // Show loading instead of an immediate redirect to prevent flickering
+    return <div className="flex items-center justify-center min-h-screen">
+      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+    </div>;
   }
   
   // Render the component if authenticated or the site is not protected

@@ -44,8 +44,9 @@ export function setAuthCookie(res: Response, passwordHash: string) {
   res.cookie("authToken", passwordHash, {
     maxAge: thirtyDaysInMs,
     httpOnly: true,
-    sameSite: "strict",
+    sameSite: "lax", // Changed from strict to lax to work better with redirects
     path: "/",
+    secure: process.env.NODE_ENV === 'production'
   });
 }
 
@@ -55,7 +56,8 @@ export function setAuthCookie(res: Response, passwordHash: string) {
 export function clearAuthCookie(res: Response) {
   res.clearCookie("authToken", {
     httpOnly: true,
-    sameSite: "strict",
+    sameSite: "lax", // Match the setting in setAuthCookie
     path: "/",
+    secure: process.env.NODE_ENV === 'production'
   });
 }

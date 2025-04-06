@@ -160,7 +160,7 @@ export default function InventoryPage() {
           >
             <Plus className="mr-1 h-4 w-4" /> Add New Crop
           </Button>
-          <Link href="/order/edit">
+          <Link href="/order-edit">
             <Button variant="outline">
               Edit Order
             </Button>

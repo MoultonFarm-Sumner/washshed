@@ -27,7 +27,7 @@ function Router() {
         <Route path="/settings" component={SettingsPage} />
         <Route path="/fields" component={FieldLocationsPage} />
         <Route path="/fields/import" component={DataImportPage} />
-        <Route path="/order/edit" component={OrderEditorPage} />
+        <Route path="/order-edit" component={OrderEditorPage} />
         <Route component={NotFound} />
       </Switch>
     </Layout>

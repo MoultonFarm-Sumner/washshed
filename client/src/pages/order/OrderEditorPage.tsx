@@ -81,12 +81,11 @@ export default function OrderEditorPage() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button 
-            variant="outline" 
-            onClick={() => window.history.back()}
-          >
-            <ArrowLeft className="mr-1 h-4 w-4" /> Back
-          </Button>
+          <Link href="/inventory">
+            <Button variant="outline">
+              <ArrowLeft className="mr-1 h-4 w-4" /> Back
+            </Button>
+          </Link>
           <Button 
             onClick={() => saveOrder(orderedProducts)} 
             className="bg-green-600 hover:bg-green-700 text-white"

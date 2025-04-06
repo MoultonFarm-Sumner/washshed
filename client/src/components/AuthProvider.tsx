@@ -39,6 +39,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
   // Check authentication status on initial load and whenever the location changes
   const [location] = useLocation();
   
+  // Helper function to check for client-side cookie
+  const checkClientCookies = (): boolean => {
+    const cookieStr = document.cookie;
+    return cookieStr.includes('isLoggedIn=true');
+  };
+  
   useEffect(() => {
     checkAuthStatus();
   }, [location]);
@@ -50,6 +56,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const data = await response.json();
       
       if (response.ok) {
+        // Trust the server's decision about authentication status
         setIsAuthenticated(data.isAuthenticated);
         setIsProtected(data.isProtected);
       } else {

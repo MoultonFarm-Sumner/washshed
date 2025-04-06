@@ -8,7 +8,10 @@ import { requireAuth } from "./auth";
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
+// Use a non-signed cookie parser with more permissive settings
+app.use(cookieParser('farm-inventory-secret', {
+  decode: decodeURIComponent,
+}));
 
 // Apply authentication middleware to API routes except for auth-related ones
 app.use(/^\/api(?!\/auth\/check|\/auth\/login|\/auth\/logout).*/, requireAuth);

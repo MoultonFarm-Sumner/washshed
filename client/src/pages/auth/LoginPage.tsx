@@ -37,15 +37,18 @@ export default function LoginPage() {
       const success = await login(data.password);
       
       if (success) {
-        // Redirect to home page on successful login
-        setLocation("/");
+        // Add a slight delay before redirecting to allow cookies to be set
+        setTimeout(() => {
+          // Hard redirect to ensure a clean page load with updated cookies
+          window.location.href = "/";
+        }, 300);
       } else {
         setLoginError("Invalid password. Please try again.");
+        setIsSubmitting(false);
       }
     } catch (error) {
       console.error("Login error:", error);
       setLoginError("An unexpected error occurred during login.");
-    } finally {
       setIsSubmitting(false);
     }
   };

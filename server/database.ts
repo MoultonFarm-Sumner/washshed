@@ -110,16 +110,30 @@ export async function initializeDatabase() {
     const passwordResult = await pool.query('SELECT COUNT(*) FROM site_auth');
     const passwordCount = parseInt(passwordResult.rows[0].count);
     
+    console.log(`Checking for existing passwords. Found: ${passwordCount}`);
+    
     if (passwordCount === 0) {
       // Create default password
       const defaultPassword = "Wa$h$eh2793915";
       const defaultPasswordHash = hashPassword(defaultPassword);
       
-      await pool.query(
-        'INSERT INTO site_auth (password_hash) VALUES ($1)',
-        [defaultPasswordHash]
-      );
-      console.log('Default site password created');
+      console.log(`Setting default password: "${defaultPassword}"`);
+      console.log(`Password hash: ${defaultPasswordHash.substring(0, 10)}...`);
+      
+      try {
+        await pool.query(
+          'INSERT INTO site_auth (password_hash) VALUES ($1)',
+          [defaultPasswordHash]
+        );
+        console.log('Default site password created successfully');
+      } catch (error) {
+        console.error('Failed to create default password:', error);
+      }
+    } else {
+      // Check existing password hash
+      const existingPasswordResult = await pool.query('SELECT password_hash FROM site_auth LIMIT 1');
+      const existingHash = existingPasswordResult.rows[0]?.password_hash;
+      console.log(`Existing password hash found: ${existingHash ? existingHash.substring(0, 10) + '...' : 'none'}`);
     }
     
     console.log('Database initialized successfully!');

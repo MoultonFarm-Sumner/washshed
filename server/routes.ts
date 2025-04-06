@@ -553,12 +553,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const authCookie = req.cookies.authToken;
       const isAuthenticated = authCookie === existingAuth.passwordHash;
       
+      // If not authenticated, make sure cookies are explicitly cleared to prevent issues
+      if (!isAuthenticated) {
+        clearAuthCookie(res);
+      }
+      
+      // Add debug information to help troubleshoot
+      console.log('Auth check:', {
+        cookiePresent: !!authCookie,
+        authenticated: isAuthenticated,
+        cookieValue: authCookie ? authCookie.substring(0, 10) + '...' : 'none',
+        expectedHash: existingAuth.passwordHash ? existingAuth.passwordHash.substring(0, 10) + '...' : 'none'
+      });
+      
       res.json({
         isProtected: true,
         isAuthenticated,
         message: isAuthenticated ? "Authenticated" : "Authentication required"
       });
     } catch (error) {
+      console.error('Auth check error:', error);
       res.status(500).json({ 
         isProtected: false, 
         isAuthenticated: false, 

@@ -41,12 +41,23 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
 export function setAuthCookie(res: Response, passwordHash: string) {
   // Set cookie that expires in 30 days
   const thirtyDaysInMs = 30 * 24 * 60 * 60 * 1000;
+  
+  // Force cookie settings to work in development environment
   res.cookie("authToken", passwordHash, {
     maxAge: thirtyDaysInMs,
     httpOnly: true,
-    sameSite: "lax", // Changed from strict to lax to work better with redirects
+    sameSite: "none", // Changed to none to work in all contexts
     path: "/",
-    secure: process.env.NODE_ENV === 'production'
+    secure: false // Set to false for development environment
+  });
+  
+  // Add a second non-httpOnly cookie for client-side detection
+  res.cookie("isLoggedIn", "true", {
+    maxAge: thirtyDaysInMs,
+    httpOnly: false,
+    sameSite: "none",
+    path: "/",
+    secure: false
   });
 }
 
@@ -54,10 +65,19 @@ export function setAuthCookie(res: Response, passwordHash: string) {
  * Clear authentication cookie
  */
 export function clearAuthCookie(res: Response) {
+  // Clear auth token cookie
   res.clearCookie("authToken", {
     httpOnly: true,
-    sameSite: "lax", // Match the setting in setAuthCookie
+    sameSite: "none",
     path: "/",
-    secure: process.env.NODE_ENV === 'production'
+    secure: false
+  });
+  
+  // Clear the client-side visible cookie as well
+  res.clearCookie("isLoggedIn", {
+    httpOnly: false,
+    sameSite: "none",
+    path: "/",
+    secure: false
   });
 }

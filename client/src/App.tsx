@@ -24,11 +24,15 @@ function ProtectedRoute({ component: Component, ...rest }: { component: React.Co
   useEffect(() => {
     // Only redirect if not loading and authentication is required but not present
     if (!isLoading && isProtected && !isAuthenticated) {
-      navigate("/login");
+      console.log("Not authenticated. Redirecting to login page...");
+      // Use window.location for a full page redirect rather than client-side routing
+      // This ensures cookies are properly recognized after login
+      window.location.href = "/login";
     }
-  }, [isAuthenticated, isProtected, isLoading, navigate]);
+  }, [isAuthenticated, isProtected, isLoading]);
   
   if (isLoading) {
+    console.log("Authentication check in progress...");
     // Show loading state while checking authentication
     return <div className="flex items-center justify-center min-h-screen">
       <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
@@ -36,12 +40,14 @@ function ProtectedRoute({ component: Component, ...rest }: { component: React.Co
   }
   
   if (isProtected && !isAuthenticated) {
+    console.log("Protected route accessed without authentication");
     // Show loading instead of an immediate redirect to prevent flickering
     return <div className="flex items-center justify-center min-h-screen">
       <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
     </div>;
   }
   
+  console.log("Authentication successful, rendering protected component");
   // Render the component if authenticated or the site is not protected
   return <Component {...rest} />;
 }

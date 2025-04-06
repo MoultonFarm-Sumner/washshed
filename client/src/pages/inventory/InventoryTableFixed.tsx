@@ -50,9 +50,15 @@ export default function InventoryTable({ products, onViewDetails }: Props) {
     if (savedOrder) {
       try {
         const parsedOrder = JSON.parse(savedOrder);
-        setCustomOrder(parsedOrder);
+        // Convert string keys back to numbers if needed
+        const fixedOrder: {[key: number]: number} = {};
+        Object.keys(parsedOrder).forEach(key => {
+          fixedOrder[parseInt(key)] = parsedOrder[key];
+        });
+        setCustomOrder(fixedOrder);
       } catch (e) {
         // If parsing fails, initialize with default order
+        console.error("Failed to parse saved order:", e);
         initializeDefaultOrder();
       }
     } else if (Object.keys(customOrder).length === 0 && products.length > 0) {
@@ -64,7 +70,11 @@ export default function InventoryTable({ products, onViewDetails }: Props) {
   // Save order to localStorage whenever it changes
   useEffect(() => {
     if (Object.keys(customOrder).length > 0) {
-      localStorage.setItem('inventoryRowOrder', JSON.stringify(customOrder));
+      try {
+        localStorage.setItem('inventoryRowOrder', JSON.stringify(customOrder));
+      } catch (e) {
+        console.error("Failed to save order to localStorage:", e);
+      }
     }
   }, [customOrder]);
   
@@ -76,6 +86,38 @@ export default function InventoryTable({ products, onViewDetails }: Props) {
     });
     setCustomOrder(initialOrder);
   };
+  
+  // Ensure all products have a position and remove positions for products that don't exist
+  useEffect(() => {
+    if (Object.keys(customOrder).length > 0 && products.length > 0) {
+      let needsUpdate = false;
+      const updatedOrder = { ...customOrder };
+      
+      // Add missing products
+      products.forEach(product => {
+        if (!updatedOrder[product.id]) {
+          // Find the highest existing position number
+          const maxPosition = Math.max(...Object.values(updatedOrder), 0);
+          updatedOrder[product.id] = maxPosition + 1;
+          needsUpdate = true;
+        }
+      });
+      
+      // Remove products that no longer exist
+      const productIds = new Set(products.map(p => p.id));
+      Object.keys(updatedOrder).forEach(key => {
+        const id = parseInt(key);
+        if (!productIds.has(id)) {
+          delete updatedOrder[id];
+          needsUpdate = true;
+        }
+      });
+      
+      if (needsUpdate) {
+        setCustomOrder(updatedOrder);
+      }
+    }
+  }, [products, customOrder]);
 
   // Maintain a stable sort with custom ordering
   const stableProducts = useMemo(() => {
@@ -280,7 +322,7 @@ export default function InventoryTable({ products, onViewDetails }: Props) {
   const handleRowReorder = () => {
     if (!selectedProductIdForReorder || !newRowNumber) return;
     
-    const productId = selectedProductIdForReorder;
+    const productId = parseInt(selectedProductIdForReorder.toString());
     const targetPosition = parseInt(newRowNumber);
     
     if (isNaN(targetPosition) || targetPosition < 1 || targetPosition > stableProducts.length) {
@@ -296,8 +338,11 @@ export default function InventoryTable({ products, onViewDetails }: Props) {
     const currentIndex = stableProducts.findIndex(p => p.id === productId);
     if (currentIndex === -1) return;
     
+    // Get the product name for better notifications
+    const productName = stableProducts[currentIndex].name;
+    
     // Calculate new order
-    const newCustomOrder = { ...customOrder };
+    const newCustomOrder: {[key: number]: number} = {};
     
     // The current position is 1-indexed in the UI but 0-indexed in the array
     const currentPosition = currentIndex + 1;
@@ -308,11 +353,16 @@ export default function InventoryTable({ products, onViewDetails }: Props) {
       return;
     }
     
+    // First copy all existing orders
+    Object.keys(customOrder).forEach(key => {
+      newCustomOrder[parseInt(key)] = customOrder[parseInt(key)];
+    });
+    
     // Moving up (lower number)
     if (targetPosition < currentPosition) {
       // Increment positions for products that will be pushed down
       stableProducts.forEach(product => {
-        const productPos = customOrder[product.id] || 0;
+        const productPos = newCustomOrder[product.id] || 0;
         if (productPos >= targetPosition && productPos < currentPosition) {
           newCustomOrder[product.id] = productPos + 1;
         }
@@ -322,7 +372,7 @@ export default function InventoryTable({ products, onViewDetails }: Props) {
     else {
       // Decrement positions for products that will be pushed up
       stableProducts.forEach(product => {
-        const productPos = customOrder[product.id] || 0;
+        const productPos = newCustomOrder[product.id] || 0;
         if (productPos > currentPosition && productPos <= targetPosition) {
           newCustomOrder[product.id] = productPos - 1;
         }
@@ -332,6 +382,14 @@ export default function InventoryTable({ products, onViewDetails }: Props) {
     // Set the new position for the moved product
     newCustomOrder[productId] = targetPosition;
     
+    // Save to localStorage immediately
+    try {
+      localStorage.setItem('inventoryRowOrder', JSON.stringify(newCustomOrder));
+    } catch (e) {
+      console.error("Failed to save updated order to localStorage:", e);
+    }
+    
+    // Update state
     setCustomOrder(newCustomOrder);
     setIsOrderModalOpen(false);
     setSelectedProductIdForReorder(null);
@@ -339,7 +397,7 @@ export default function InventoryTable({ products, onViewDetails }: Props) {
     
     toast({
       title: "Row Order Updated",
-      description: `Product moved to row position ${targetPosition}`,
+      description: `"${productName}" moved to row position ${targetPosition}`,
     });
   };
 

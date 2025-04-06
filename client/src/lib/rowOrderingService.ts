@@ -25,8 +25,21 @@ export async function saveRowOrder(productIds: number[]): Promise<void> {
  */
 export async function loadRowOrder(): Promise<number[] | null> {
   try {
-    const queryFn = getQueryFn<any>({ on401: "returnNull" });
-    const data = await queryFn(`/api/settings/${ROW_ORDER_KEY}`);
+    // Use direct fetch instead of queryFn which is designed for React Query
+    const response = await fetch(`/api/settings/${ROW_ORDER_KEY}`, {
+      credentials: "include"
+    });
+    
+    if (!response.ok) {
+      if (response.status === 404) {
+        // Not found is expected for new users
+        return null;
+      }
+      // Any other error
+      throw new Error(`Failed to load row ordering: ${response.status} ${response.statusText}`);
+    }
+    
+    const data = await response.json();
     
     if (!data || !data.value) {
       return null;

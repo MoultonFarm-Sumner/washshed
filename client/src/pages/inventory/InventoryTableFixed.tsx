@@ -51,16 +51,19 @@ export default function InventoryTable({ products, onViewDetails }: Props) {
         .sort((a, b) => order[parseInt(a)] - order[parseInt(b)])
         .map(key => parseInt(key));
       
-      // Save to server via API
+      // Save to server via API first
       await saveRowOrder(productIds);
       
-      // Also keep in localStorage as backup
+      // Then keep in localStorage as backup
       const orderStr = JSON.stringify(order);
       localStorage.setItem('inventoryRowOrder', orderStr);
       
+      // Don't use cookies for persistence as they can be inconsistent
+      // Also, they can be lost if the user clears them
+      
       console.log("Row order saved to server and localStorage");
     } catch (e) {
-      console.error("Failed to save order:", e);
+      console.error("Failed to save order to server:", e);
       
       // Fallback to just localStorage if server fails
       try {
@@ -124,12 +127,16 @@ export default function InventoryTable({ products, onViewDetails }: Props) {
     // Use an async function inside useEffect
     const fetchOrderFromStorage = async () => {
       try {
+        console.log("Fetching row order from server...");
+        // Always try to get the server order first
         const loadedOrder = await loadOrderFromStorage();
         
         if (loadedOrder && Object.keys(loadedOrder).length > 0) {
+          console.log("Loaded row order from server:", loadedOrder);
           setCustomOrder(loadedOrder);
         } else if (Object.keys(customOrder).length === 0 && products.length > 0) {
           // No saved order and no current order, initialize with default
+          console.log("No saved order found, initializing default order");
           initializeDefaultOrder();
         }
       } catch (error) {
@@ -141,7 +148,10 @@ export default function InventoryTable({ products, onViewDetails }: Props) {
       }
     };
     
-    fetchOrderFromStorage();
+    // Only run this effect when products change or on initial mount
+    if (products.length > 0) {
+      fetchOrderFromStorage();
+    }
   }, [products]);
   
   // Save order to storage whenever it changes
@@ -517,14 +527,18 @@ export default function InventoryTable({ products, onViewDetails }: Props) {
             variant="outline"
             size="sm"
             onClick={() => {
-              // Reset to default ordering by ID
-              localStorage.removeItem('inventoryRowOrder');
-              // Clear the cookie too
-              document.cookie = "inventoryRowOrder=; path=/; max-age=0";
-              // Clear from server - save empty array
-              saveRowOrder([]).catch(err => {
-                console.error("Failed to reset row order on server:", err);
-              });
+              // First, clear from server - save empty array
+              saveRowOrder([])
+                .then(() => {
+                  console.log("Successfully reset row order on server");
+                  // Only after server is cleared, clear localStorage
+                  localStorage.removeItem('inventoryRowOrder');
+                  // Clear any cookies
+                  document.cookie = "inventoryRowOrder=; path=/; max-age=0";
+                })
+                .catch(err => {
+                  console.error("Failed to reset row order on server:", err);
+                });
               // Initialize default order
               initializeDefaultOrder();
               toast({

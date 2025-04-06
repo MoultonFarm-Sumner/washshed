@@ -2,6 +2,14 @@ import { pgTable, text, serial, integer, boolean, timestamp, varchar, jsonb } fr
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
+// Site authentication model
+export const siteAuth = pgTable("site_auth", {
+  id: serial("id").primaryKey(),
+  passwordHash: text("password_hash").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
 // Product model
 export const products = pgTable("products", {
   id: serial("id").primaryKey(),
@@ -69,7 +77,17 @@ export const insertSettingsSchema = createInsertSchema(settings).omit({
   updatedAt: true,
 });
 
+// SiteAuth insert schema
+export const insertSiteAuthSchema = createInsertSchema(siteAuth).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Types
+export type SiteAuth = typeof siteAuth.$inferSelect;
+export type InsertSiteAuth = z.infer<typeof insertSiteAuthSchema>;
+
 export type Product = typeof products.$inferSelect;
 export type InsertProduct = z.infer<typeof insertProductSchema>;
 

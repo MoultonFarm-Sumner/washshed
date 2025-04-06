@@ -3,7 +3,8 @@ import {
   InventoryHistory, InsertInventoryHistory,
   FieldLocation, InsertFieldLocation,
   Setting, InsertSetting,
-  products, inventoryHistory, fieldLocations, settings
+  SiteAuth,
+  products, inventoryHistory, fieldLocations, settings, siteAuth
 } from "../shared/schema";
 
 // Interface for storage operations
@@ -26,6 +27,10 @@ export interface IStorage {
   createFieldLocation(location: InsertFieldLocation): Promise<FieldLocation>;
   deleteFieldLocation(id: number): Promise<boolean>;
   
+  // Authentication operations
+  getSitePassword(): Promise<SiteAuth | null>;
+  setSitePassword(passwordHash: string): Promise<SiteAuth>;
+  
   // Settings operations
   getSetting(key: string): Promise<any | null>;
   setSetting(key: string, value: any): Promise<boolean>;
@@ -37,6 +42,7 @@ export class MemStorage implements IStorage {
   private inventoryHistory: Map<number, InventoryHistory>;
   private fieldLocations: Map<number, FieldLocation>;
   private settings: Map<string, any>;
+  private sitePassword: SiteAuth | null;
   private productIdCounter: number;
   private historyIdCounter: number;
   private fieldLocationIdCounter: number;
@@ -46,6 +52,7 @@ export class MemStorage implements IStorage {
     this.inventoryHistory = new Map();
     this.fieldLocations = new Map();
     this.settings = new Map();
+    this.sitePassword = null;
     this.productIdCounter = 1;
     this.historyIdCounter = 1;
     this.fieldLocationIdCounter = 1;
@@ -242,6 +249,23 @@ export class MemStorage implements IStorage {
 
   async deleteFieldLocation(id: number): Promise<boolean> {
     return this.fieldLocations.delete(id);
+  }
+  
+  // Authentication methods
+  async getSitePassword(): Promise<SiteAuth | null> {
+    return this.sitePassword;
+  }
+  
+  async setSitePassword(passwordHash: string): Promise<SiteAuth> {
+    const now = new Date();
+    const newSiteAuth: SiteAuth = {
+      id: 1,
+      passwordHash,
+      createdAt: now,
+      updatedAt: now
+    };
+    this.sitePassword = newSiteAuth;
+    return newSiteAuth;
   }
   
   // Settings methods

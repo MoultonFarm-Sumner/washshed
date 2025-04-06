@@ -1,11 +1,17 @@
 import express, { type Request, Response, NextFunction } from "express";
+import cookieParser from "cookie-parser";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { initializeDatabase } from "./database";
+import { requireAuth } from "./auth";
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+app.use(cookieParser());
+
+// Apply authentication middleware to API routes except for auth-related ones
+app.use(/^\/api(?!\/auth\/check|\/auth\/login).*/, requireAuth);
 
 app.use((req, res, next) => {
   const start = Date.now();

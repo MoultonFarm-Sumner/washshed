@@ -8,6 +8,7 @@ import {
   insertFieldLocationSchema 
 } from "@shared/schema";
 import { emailSettings } from "./emailSettings";
+import { hashPassword, setAuthCookie, clearAuthCookie } from "./auth";
 
 // Use the PostgreSQL storage implementation
 const storage = new PgStorage();
@@ -484,6 +485,134 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       res.status(500).json({ message: "Failed to save setting" });
+    }
+  });
+
+  // Authentication routes
+  app.post("/api/auth/login", async (req: Request, res: Response) => {
+    try {
+      const schema = z.object({
+        password: z.string().min(1, "Password is required")
+      });
+      
+      const { password } = schema.parse(req.body);
+      
+      // Hash the password
+      const passwordHash = hashPassword(password);
+      
+      // Check if a password is already set
+      const existingAuth = await storage.getSitePassword();
+      
+      if (!existingAuth) {
+        // No password set yet, this is the initial setup
+        await storage.setSitePassword(passwordHash);
+        setAuthCookie(res, passwordHash);
+        return res.json({ success: true, message: "Password set successfully" });
+      }
+      
+      // Password already exists, verify it
+      if (existingAuth.passwordHash !== passwordHash) {
+        return res.status(401).json({ success: false, message: "Invalid password" });
+      }
+      
+      // Valid password
+      setAuthCookie(res, passwordHash);
+      res.json({ success: true, message: "Login successful" });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          success: false,
+          message: "Invalid login data", 
+          errors: error.errors 
+        });
+      }
+      res.status(500).json({ success: false, message: "Login failed" });
+    }
+  });
+  
+  app.post("/api/auth/logout", (_req: Request, res: Response) => {
+    clearAuthCookie(res);
+    res.json({ success: true, message: "Logout successful" });
+  });
+  
+  app.get("/api/auth/check", async (req: Request, res: Response) => {
+    try {
+      // Check if password is set in database
+      const existingAuth = await storage.getSitePassword();
+      
+      if (!existingAuth) {
+        // No password set, site is not protected yet
+        return res.json({ 
+          isProtected: false, 
+          isAuthenticated: true, 
+          message: "Site is not password protected" 
+        });
+      }
+      
+      // Check if user is authenticated via cookie
+      const authCookie = req.cookies.authToken;
+      const isAuthenticated = authCookie === existingAuth.passwordHash;
+      
+      res.json({
+        isProtected: true,
+        isAuthenticated,
+        message: isAuthenticated ? "Authenticated" : "Authentication required"
+      });
+    } catch (error) {
+      res.status(500).json({ 
+        isProtected: false, 
+        isAuthenticated: false, 
+        message: "Error checking authentication status" 
+      });
+    }
+  });
+  
+  app.post("/api/auth/change-password", async (req: Request, res: Response) => {
+    try {
+      const schema = z.object({
+        currentPassword: z.string().min(1, "Current password is required"),
+        newPassword: z.string().min(1, "New password is required")
+      });
+      
+      const { currentPassword, newPassword } = schema.parse(req.body);
+      
+      // Hash the passwords
+      const currentPasswordHash = hashPassword(currentPassword);
+      const newPasswordHash = hashPassword(newPassword);
+      
+      // Check if current password is correct
+      const existingAuth = await storage.getSitePassword();
+      
+      if (!existingAuth) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "No password has been set yet" 
+        });
+      }
+      
+      if (existingAuth.passwordHash !== currentPasswordHash) {
+        return res.status(401).json({ 
+          success: false, 
+          message: "Current password is incorrect" 
+        });
+      }
+      
+      // Update the password
+      await storage.setSitePassword(newPasswordHash);
+      
+      // Set the new auth cookie
+      setAuthCookie(res, newPasswordHash);
+      
+      res.json({ success: true, message: "Password changed successfully" });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          success: false,
+          message: "Invalid password data", 
+          errors: error.errors 
+        });
+      }
+      res.status(500).json({ success: false, message: "Failed to change password" });
     }
   });
 

@@ -9,7 +9,9 @@ import { Label } from "@/components/ui/label";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
-import { Mail, Server } from "lucide-react";
+import { Mail, Server, Lock } from "lucide-react";
+import { useAuth } from "@/components/AuthProvider";
+import ChangePasswordForm from "@/pages/settings/ChangePasswordForm";
 
 // Email settings interface
 interface EmailSettings {
@@ -163,6 +165,7 @@ export default function SettingsPage() {
       <Tabs defaultValue="email" className="w-full">
         <TabsList className="mb-4">
           <TabsTrigger value="email">Email Notifications</TabsTrigger>
+          <TabsTrigger value="security">Security</TabsTrigger>
           <TabsTrigger value="general">General Settings</TabsTrigger>
         </TabsList>
         
@@ -302,6 +305,26 @@ export default function SettingsPage() {
                 Save Email Settings
               </Button>
             </CardFooter>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="security">
+          <Card>
+            <CardHeader>
+              <CardTitle>Security Settings</CardTitle>
+              <CardDescription>Manage your site password and authentication settings.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-4">
+                <h3 className="text-lg font-medium">Site Password</h3>
+                <p className="text-sm text-gray-500">
+                  Change the password used to access the farm management system. 
+                  The current password protection will remain active for 30 days on this device.
+                </p>
+                
+                <ChangePasswordForm />
+              </div>
+            </CardContent>
           </Card>
         </TabsContent>
         

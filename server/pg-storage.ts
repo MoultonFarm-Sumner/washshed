@@ -4,6 +4,7 @@ import {
   InventoryHistory, 
   FieldLocation, 
   Setting,
+  SiteAuth,
   InsertProduct, 
   InsertInventoryHistory, 
   InsertFieldLocation,
@@ -11,7 +12,8 @@ import {
   products,
   inventoryHistory,
   fieldLocations,
-  settings
+  settings,
+  siteAuth
 } from '../shared/schema';
 import { IStorage } from './storage';
 import { eq, desc, between, sql } from 'drizzle-orm';
@@ -116,6 +118,48 @@ export class PgStorage implements IStorage {
     return result.length > 0;
   }
   
+  // Authentication operations
+  async getSitePassword(): Promise<SiteAuth | null> {
+    const results = await db
+      .select()
+      .from(siteAuth)
+      .limit(1);
+    
+    return results.length > 0 ? results[0] : null;
+  }
+  
+  async setSitePassword(passwordHash: string): Promise<SiteAuth> {
+    const now = new Date();
+    // Check if a password exists first
+    const existing = await this.getSitePassword();
+    
+    if (existing) {
+      // Update existing password
+      const result = await db
+        .update(siteAuth)
+        .set({ 
+          passwordHash, 
+          updatedAt: now 
+        })
+        .where(eq(siteAuth.id, existing.id))
+        .returning();
+      
+      return result[0];
+    } else {
+      // Create new password
+      const result = await db
+        .insert(siteAuth)
+        .values({ 
+          passwordHash,
+          createdAt: now,
+          updatedAt: now
+        })
+        .returning();
+      
+      return result[0];
+    }
+  }
+
   // Settings operations
   async getSetting(key: string): Promise<any | null> {
     const result = await db

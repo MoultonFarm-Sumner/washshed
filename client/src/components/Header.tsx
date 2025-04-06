@@ -1,9 +1,13 @@
 import { useLocation, Link } from "wouter";
 import { useState, useEffect } from "react";
+import { useAuth } from "@/components/AuthProvider";
+import { Button } from "@/components/ui/button";
+import { LogOut } from "lucide-react";
 
 export default function Header() {
   const [location, setLocation] = useLocation();
   const [currentDate, setCurrentDate] = useState<string>("");
+  const { isAuthenticated, logout } = useAuth();
 
   useEffect(() => {
     const date = new Date();
@@ -29,14 +33,29 @@ export default function Header() {
 
   // Handle the root path by redirecting to /inventory
   const activePath = location === "/" ? "/inventory" : location;
+  
+  const handleLogout = async () => {
+    await logout();
+  };
 
   return (
     <header className="bg-primary text-white shadow-md">
       <div className="container mx-auto px-4 py-3 flex justify-between items-center">
         <h1 className="text-xl font-medium">Farm Management System</h1>
-        <div>
-          <span className="text-sm mr-2">{currentDate}</span>
-          <span className="text-sm">Farm Admin</span>
+        <div className="flex items-center">
+          <span className="text-sm mr-4">{currentDate}</span>
+          <span className="text-sm mr-3">Farm Admin</span>
+          {isAuthenticated && (
+            <Button 
+              variant="ghost" 
+              className="text-white hover:bg-primary-foreground hover:text-primary p-2"
+              onClick={handleLogout}
+              size="sm"
+            >
+              <LogOut className="h-4 w-4 mr-1" />
+              <span className="text-xs">Logout</span>
+            </Button>
+          )}
         </div>
       </div>
       <div className="container mx-auto px-4 text-sm font-medium">

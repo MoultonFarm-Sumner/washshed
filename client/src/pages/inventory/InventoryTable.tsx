@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Product } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,6 +22,11 @@ interface Props {
 export default function InventoryTable({ products, onViewDetails }: Props) {
   const { toast } = useToast();
   const [editableValues, setEditableValues] = useState<{ [key: string]: any }>({});
+  
+  // Maintain a stable sort by ID to prevent rows from jumping around
+  const stableProducts = useMemo(() => {
+    return [...products].sort((a, b) => a.id - b.id);
+  }, [products]);
   
   // Fetch field locations for dropdown
   const { data: fieldLocations = [] } = useQuery<string[]>({
@@ -232,7 +237,7 @@ export default function InventoryTable({ products, onViewDetails }: Props) {
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
-          {products.map((product) => (
+          {stableProducts.map((product) => (
             <tr
               key={product.id}
               className="hover:bg-gray-100 cursor-pointer"

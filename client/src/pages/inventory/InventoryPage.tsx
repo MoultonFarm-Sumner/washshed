@@ -1,11 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import DraggableInventoryTable from "./DraggableInventoryTable";
+import InventoryTable from "./InventoryTable";
 import ProductDetailsModal from "./ProductDetailsModal";
 import { Product } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -212,10 +212,9 @@ export default function InventoryPage() {
             </CardHeader>
             <CardContent>
               <div className="bg-white rounded-lg">
-                <DraggableInventoryTable 
+                <InventoryTable 
                   products={filteredProducts.filter(p => !["Wholesale", "Kitchen"].includes(p.fieldLocation))} 
                   onViewDetails={handleViewProductDetails}
-                  onOrderChanged={(reorderedProducts) => updateProductsOrder(reorderedProducts)}
                 />
               </div>
             </CardContent>

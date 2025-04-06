@@ -511,7 +511,9 @@ export default function InventoryTable({ products, onViewDetails }: Props) {
           <thead className="bg-gray-50">
             <tr>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-12">
-                Row #
+                <div className="flex items-center space-x-1">
+                  <span>Row #</span>
+                </div>
               </th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Field Location

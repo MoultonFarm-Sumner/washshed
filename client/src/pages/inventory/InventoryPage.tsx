@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import InventoryTable from "./InventoryTableFixed";
 import ProductDetailsModal from "./ProductDetailsModal";
 import { Product } from "@shared/schema";
@@ -25,6 +26,8 @@ export default function InventoryPage() {
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [filterFieldLocation, setFilterFieldLocation] = useState<string>("");
+  const [jumpToRowNumber, setJumpToRowNumber] = useState<string>("");
+  const [showJumpModal, setShowJumpModal] = useState(false);
   
   // Fetch all products
   const {
@@ -192,6 +195,14 @@ export default function InventoryPage() {
                 </SelectContent>
               </Select>
             </div>
+            <div>
+              <Button 
+                variant="outline" 
+                onClick={() => setShowJumpModal(true)}
+              >
+                Jump to Row
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -255,6 +266,66 @@ export default function InventoryPage() {
         onClose={() => setIsAddModalOpen(false)}
         onProductAdded={handleProductUpdated}
       />
+
+      {/* Jump to Row Dialog */}
+      <Dialog open={showJumpModal} onOpenChange={setShowJumpModal}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Jump to Row</DialogTitle>
+            <DialogDescription>
+              Enter a row number to quickly navigate to that item.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="flex items-center gap-4">
+              <label htmlFor="jump-row" className="text-right">
+                Row Number:
+              </label>
+              <Input
+                id="jump-row"
+                type="number"
+                value={jumpToRowNumber}
+                onChange={(e) => setJumpToRowNumber(e.target.value)}
+                placeholder="Enter row number"
+                className="col-span-3"
+                min={1}
+                max={filteredProducts.length}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button 
+              variant="secondary" 
+              onClick={() => setShowJumpModal(false)}
+            >
+              Cancel
+            </Button>
+            <Button 
+              type="submit"
+              onClick={() => {
+                const rowNum = parseInt(jumpToRowNumber);
+                if (isNaN(rowNum) || rowNum < 1 || rowNum > filteredProducts.length) {
+                  toast({
+                    title: "Invalid Row Number",
+                    description: `Please enter a number between 1 and ${filteredProducts.length}`,
+                    variant: "destructive",
+                  });
+                  return;
+                }
+                
+                const product = filteredProducts[rowNum - 1];
+                if (product) {
+                  setSelectedProduct(product);
+                  setIsDetailsModalOpen(true);
+                  setShowJumpModal(false);
+                }
+              }}
+            >
+              Jump
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

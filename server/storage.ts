@@ -2,7 +2,8 @@ import {
   Product, InsertProduct, 
   InventoryHistory, InsertInventoryHistory,
   FieldLocation, InsertFieldLocation,
-  products, inventoryHistory, fieldLocations
+  Setting, InsertSetting,
+  products, inventoryHistory, fieldLocations, settings
 } from "../shared/schema";
 
 // Interface for storage operations
@@ -24,6 +25,10 @@ export interface IStorage {
   getFieldLocations(): Promise<FieldLocation[]>;
   createFieldLocation(location: InsertFieldLocation): Promise<FieldLocation>;
   deleteFieldLocation(id: number): Promise<boolean>;
+  
+  // Settings operations
+  getSetting(key: string): Promise<any | null>;
+  setSetting(key: string, value: any): Promise<boolean>;
 }
 
 // In-memory storage implementation
@@ -31,6 +36,7 @@ export class MemStorage implements IStorage {
   private products: Map<number, Product>;
   private inventoryHistory: Map<number, InventoryHistory>;
   private fieldLocations: Map<number, FieldLocation>;
+  private settings: Map<string, any>;
   private productIdCounter: number;
   private historyIdCounter: number;
   private fieldLocationIdCounter: number;
@@ -39,6 +45,7 @@ export class MemStorage implements IStorage {
     this.products = new Map();
     this.inventoryHistory = new Map();
     this.fieldLocations = new Map();
+    this.settings = new Map();
     this.productIdCounter = 1;
     this.historyIdCounter = 1;
     this.fieldLocationIdCounter = 1;
@@ -235,6 +242,16 @@ export class MemStorage implements IStorage {
 
   async deleteFieldLocation(id: number): Promise<boolean> {
     return this.fieldLocations.delete(id);
+  }
+  
+  // Settings methods
+  async getSetting(key: string): Promise<any | null> {
+    return this.settings.has(key) ? this.settings.get(key) : null;
+  }
+  
+  async setSetting(key: string, value: any): Promise<boolean> {
+    this.settings.set(key, value);
+    return true;
   }
 }
 

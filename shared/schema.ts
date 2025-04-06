@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp, varchar } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, varchar, jsonb } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -38,6 +38,14 @@ export const fieldLocations = pgTable("field_locations", {
   name: varchar("name", { length: 100 }).notNull().unique(),
 });
 
+// Settings table for app configuration and user preferences
+export const settings = pgTable("settings", {
+  id: serial("id").primaryKey(),
+  key: varchar("key", { length: 100 }).notNull().unique(),
+  value: jsonb("value").notNull(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
 // Product insert schema
 export const insertProductSchema = createInsertSchema(products).omit({
   id: true,
@@ -55,6 +63,12 @@ export const insertFieldLocationSchema = createInsertSchema(fieldLocations).omit
   id: true,
 });
 
+// Settings insert schema
+export const insertSettingsSchema = createInsertSchema(settings).omit({
+  id: true,
+  updatedAt: true,
+});
+
 // Types
 export type Product = typeof products.$inferSelect;
 export type InsertProduct = z.infer<typeof insertProductSchema>;
@@ -64,6 +78,9 @@ export type InsertInventoryHistory = z.infer<typeof insertInventoryHistorySchema
 
 export type FieldLocation = typeof fieldLocations.$inferSelect;
 export type InsertFieldLocation = z.infer<typeof insertFieldLocationSchema>;
+
+export type Setting = typeof settings.$inferSelect;
+export type InsertSetting = z.infer<typeof insertSettingsSchema>;
 
 // Extended schema for form validation
 export const productFormSchema = insertProductSchema.extend({

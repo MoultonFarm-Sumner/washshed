@@ -3,12 +3,15 @@ import {
   Product, 
   InventoryHistory, 
   FieldLocation, 
+  Setting,
   InsertProduct, 
   InsertInventoryHistory, 
   InsertFieldLocation,
+  InsertSetting,
   products,
   inventoryHistory,
-  fieldLocations
+  fieldLocations,
+  settings
 } from '../shared/schema';
 import { IStorage } from './storage';
 import { eq, desc, between, sql } from 'drizzle-orm';
@@ -111,5 +114,42 @@ export class PgStorage implements IStorage {
       .returning({ id: fieldLocations.id });
     
     return result.length > 0;
+  }
+  
+  // Settings operations
+  async getSetting(key: string): Promise<any | null> {
+    const result = await db
+      .select()
+      .from(settings)
+      .where(eq(settings.key, key));
+    
+    if (result.length === 0) return null;
+    
+    // The value is stored as JSONB in PostgreSQL, so it should already be parsed
+    return result[0].value;
+  }
+  
+  async setSetting(key: string, value: any): Promise<boolean> {
+    // For JSONB column, we can pass the value directly to Drizzle
+    // Check if setting already exists
+    const existing = await db
+      .select()
+      .from(settings)
+      .where(eq(settings.key, key));
+    
+    if (existing.length > 0) {
+      // Update existing setting
+      await db
+        .update(settings)
+        .set({ value })
+        .where(eq(settings.key, key));
+    } else {
+      // Insert new setting
+      await db
+        .insert(settings)
+        .values({ key, value });
+    }
+    
+    return true;
   }
 }

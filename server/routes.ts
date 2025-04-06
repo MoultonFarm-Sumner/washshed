@@ -447,7 +447,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // This route handler has been merged with the one above
+  // Application settings routes
+  app.get("/api/settings/:key", async (req: Request, res: Response) => {
+    try {
+      const { key } = req.params;
+      const value = await storage.getSetting(key);
+      if (value === null) {
+        return res.status(404).json({ message: "Setting not found" });
+      }
+      res.json({ key, value });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to get setting" });
+    }
+  });
+
+  app.post("/api/settings", async (req: Request, res: Response) => {
+    try {
+      const schema = z.object({
+        key: z.string().min(1),
+        value: z.any()
+      });
+      
+      const { key, value } = schema.parse(req.body);
+      
+      const success = await storage.setSetting(key, value);
+      if (success) {
+        res.json({ key, value });
+      } else {
+        res.status(500).json({ message: "Failed to save setting" });
+      }
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Invalid setting data", 
+          errors: error.errors 
+        });
+      }
+      res.status(500).json({ message: "Failed to save setting" });
+    }
+  });
 
   // Create HTTP server
   const httpServer = createServer(app);

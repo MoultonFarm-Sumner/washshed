@@ -237,10 +237,11 @@ export default function DraggableInventoryTable({ products, onViewDetails, onOrd
             strategy={verticalListSortingStrategy}
           >
             <tbody className="bg-white divide-y divide-gray-200">
-              {products.map((product) => (
+              {products.map((product, index) => (
                 <SortableTableRow
                   key={product.id}
                   id={product.id.toString()}
+                  rowNumber={index + 1}
                   onClick={() => onViewDetails(product)}
                 >
                   <td className="px-4 py-3 whitespace-nowrap text-sm">

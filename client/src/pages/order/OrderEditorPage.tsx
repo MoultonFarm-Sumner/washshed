@@ -1,13 +1,13 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Save } from "lucide-react";
+import { ArrowLeft, Save, ArrowUp, ArrowDown } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Product } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "wouter";
-import DraggableInventoryTable from "../inventory/DraggableInventoryTable";
+import { Input } from "@/components/ui/input";
 
 export default function OrderEditorPage() {
   const { toast } = useToast();
@@ -53,16 +53,54 @@ export default function OrderEditorPage() {
     }
   });
 
-  // Handle order changes from the draggable table
-  const handleOrderChanged = (reorderedProducts: Product[]) => {
-    setOrderedProducts(reorderedProducts);
+  // Move a product up in the order
+  const moveUp = (index: number) => {
+    if (index === 0) return; // Already at the top
+    
+    const updatedProducts = [...orderedProducts];
+    const temp = updatedProducts[index];
+    updatedProducts[index] = updatedProducts[index - 1];
+    updatedProducts[index - 1] = temp;
+    
+    setOrderedProducts(updatedProducts);
   };
 
-  // View product details is not needed in this context
-  const handleViewProductDetails = () => {
-    // No-op, we don't need product details in order editor
+  // Move a product down in the order
+  const moveDown = (index: number) => {
+    if (index === orderedProducts.length - 1) return; // Already at the bottom
+    
+    const updatedProducts = [...orderedProducts];
+    const temp = updatedProducts[index];
+    updatedProducts[index] = updatedProducts[index + 1];
+    updatedProducts[index + 1] = temp;
+    
+    setOrderedProducts(updatedProducts);
   };
 
+  // Change a product's position directly
+  const changePosition = (index: number, newPosition: string) => {
+    const position = parseInt(newPosition);
+    
+    if (isNaN(position) || position < 1 || position > orderedProducts.length) {
+      return;
+    }
+    
+    // Calculate the new index (subtract 1 as positions start from 1, indices from 0)
+    const newIndex = position - 1;
+    if (newIndex === index) return; // No change needed
+    
+    const updatedProducts = [...orderedProducts];
+    const productToMove = updatedProducts[index];
+    
+    // Remove the product from its current position
+    updatedProducts.splice(index, 1);
+    
+    // Insert it at the new position
+    updatedProducts.splice(newIndex, 0, productToMove);
+    
+    setOrderedProducts(updatedProducts);
+  };
+  
   if (isLoading) {
     return <div className="py-10 text-center">Loading inventory data...</div>;
   }
@@ -77,7 +115,7 @@ export default function OrderEditorPage() {
         <div>
           <h1 className="text-2xl font-bold mb-1">Edit Inventory Order</h1>
           <p className="text-gray-600">
-            Drag and drop items to customize the display order
+            Adjust the position numbers or use the up/down buttons to change the display order
           </p>
         </div>
         <div className="flex gap-2">
@@ -98,18 +136,77 @@ export default function OrderEditorPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Drag to Reorder</CardTitle>
+          <CardTitle>Reorder Inventory Items</CardTitle>
           <CardDescription>
-            Use the drag handles on the left of each row to change the order
+            Change the position number or use the arrow buttons to move items up or down
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="bg-white rounded-lg">
-            <DraggableInventoryTable 
-              products={orderedProducts} 
-              onViewDetails={handleViewProductDetails}
-              onOrderChanged={handleOrderChanged}
-            />
+          <div className="overflow-x-auto bg-white rounded-lg">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
+                    Position
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Field Location
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Crop
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {orderedProducts.map((product, index) => (
+                  <tr key={product.id} className="hover:bg-gray-100">
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <div className="flex items-center">
+                        <Input
+                          className="w-16 h-8 px-2 text-center"
+                          value={index + 1}
+                          onChange={(e) => changePosition(index, e.target.value)}
+                          type="number"
+                          min={1}
+                          max={orderedProducts.length}
+                        />
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-800">
+                      {product.fieldLocation}
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-800">
+                      {product.name}
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <div className="flex space-x-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => moveUp(index)}
+                          disabled={index === 0}
+                          className="h-8 w-8 p-0"
+                        >
+                          <ArrowUp className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => moveDown(index)}
+                          disabled={index === orderedProducts.length - 1}
+                          className="h-8 w-8 p-0"
+                        >
+                          <ArrowDown className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </CardContent>
       </Card>

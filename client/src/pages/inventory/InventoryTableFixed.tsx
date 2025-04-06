@@ -6,6 +6,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Minus, ArrowUp, ArrowDown, MoveDown, MoveUp } from "lucide-react";
+import { saveRowOrder, loadRowOrder } from "@/lib/rowOrderingService";
 import {
   Select,
   SelectContent,
@@ -45,28 +46,49 @@ export default function InventoryTable({ products, onViewDetails }: Props) {
   // Function to save order to the server via API
   const saveOrderToServer = async (order: {[key: number]: number}) => {
     try {
-      // Use API request to store order on the server - we'll use a session cookie approach
+      // Convert object format to array format for server storage
+      const productIds = Object.keys(order)
+        .sort((a, b) => order[parseInt(a)] - order[parseInt(b)])
+        .map(key => parseInt(key));
+      
+      // Save to server via API
+      await saveRowOrder(productIds);
+      
+      // Also keep in localStorage as backup
       const orderStr = JSON.stringify(order);
-      document.cookie = `inventoryRowOrder=${encodeURIComponent(orderStr)}; path=/; max-age=31536000`; // 1 year
-      localStorage.setItem('inventoryRowOrder', orderStr); // Fallback to localStorage too
-      console.log("Row order saved to cookies and localStorage");
+      localStorage.setItem('inventoryRowOrder', orderStr);
+      
+      console.log("Row order saved to server and localStorage");
     } catch (e) {
       console.error("Failed to save order:", e);
+      
+      // Fallback to just localStorage if server fails
+      try {
+        const orderStr = JSON.stringify(order);
+        localStorage.setItem('inventoryRowOrder', orderStr);
+      } catch (error) {
+        console.error("Failed to save order to localStorage:", error);
+      }
     }
   };
   
-  // Function to load order from cookies or localStorage
-  const loadOrderFromStorage = (): {[key: number]: number} | null => {
+  // Function to load order from server or localStorage
+  const loadOrderFromStorage = async (): Promise<{[key: number]: number} | null> => {
     try {
-      // Try to get from cookies first
-      const matches = document.cookie.match(/inventoryRowOrder=([^;]+)/);
-      let savedOrder = matches ? decodeURIComponent(matches[1]) : null;
+      // First try to get from server
+      const serverOrder = await loadRowOrder();
       
-      // If not in cookies, try localStorage
-      if (!savedOrder) {
-        savedOrder = localStorage.getItem('inventoryRowOrder');
+      if (serverOrder && serverOrder.length > 0) {
+        // Convert array format to object format
+        const orderObject: {[key: number]: number} = {};
+        serverOrder.forEach((id, index) => {
+          orderObject[id] = index + 1;
+        });
+        return orderObject;
       }
       
+      // If not on server, try localStorage as fallback
+      const savedOrder = localStorage.getItem('inventoryRowOrder');
       if (savedOrder) {
         const parsedOrder = JSON.parse(savedOrder);
         // Convert string keys back to numbers
@@ -78,26 +100,57 @@ export default function InventoryTable({ products, onViewDetails }: Props) {
       }
     } catch (e) {
       console.error("Failed to load order:", e);
+      
+      // Try localStorage as final fallback
+      try {
+        const savedOrder = localStorage.getItem('inventoryRowOrder');
+        if (savedOrder) {
+          const parsedOrder = JSON.parse(savedOrder);
+          const fixedOrder: {[key: number]: number} = {};
+          Object.keys(parsedOrder).forEach(key => {
+            fixedOrder[parseInt(key)] = parsedOrder[key];
+          });
+          return fixedOrder;
+        }
+      } catch (error) {
+        console.error("Failed to load order from localStorage:", error);
+      }
     }
     return null;
   };
   
   // Load custom order from storage or initialize if empty
   useEffect(() => {
-    const loadedOrder = loadOrderFromStorage();
+    // Use an async function inside useEffect
+    const fetchOrderFromStorage = async () => {
+      try {
+        const loadedOrder = await loadOrderFromStorage();
+        
+        if (loadedOrder && Object.keys(loadedOrder).length > 0) {
+          setCustomOrder(loadedOrder);
+        } else if (Object.keys(customOrder).length === 0 && products.length > 0) {
+          // No saved order and no current order, initialize with default
+          initializeDefaultOrder();
+        }
+      } catch (error) {
+        console.error("Error loading row order:", error);
+        // Fallback to default order
+        if (Object.keys(customOrder).length === 0 && products.length > 0) {
+          initializeDefaultOrder();
+        }
+      }
+    };
     
-    if (loadedOrder && Object.keys(loadedOrder).length > 0) {
-      setCustomOrder(loadedOrder);
-    } else if (Object.keys(customOrder).length === 0 && products.length > 0) {
-      // No saved order and no current order, initialize with default
-      initializeDefaultOrder();
-    }
+    fetchOrderFromStorage();
   }, [products]);
   
   // Save order to storage whenever it changes
   useEffect(() => {
     if (Object.keys(customOrder).length > 0) {
-      saveOrderToServer(customOrder);
+      // Don't need to await here since we're just triggering the save
+      saveOrderToServer(customOrder).catch(err => {
+        console.error("Failed to save row order to server:", err);
+      });
     }
   }, [customOrder]);
   
@@ -405,11 +458,22 @@ export default function InventoryTable({ products, onViewDetails }: Props) {
     // Set the new position for the moved product
     newCustomOrder[productId] = targetPosition;
     
-    // Save to cookies and localStorage immediately
+    // Save to server and localStorage
     try {
+      // Convert object format to array format for server storage
+      const productIds = Object.keys(newCustomOrder)
+        .sort((a, b) => newCustomOrder[parseInt(a)] - newCustomOrder[parseInt(b)])
+        .map(key => parseInt(key));
+      
+      // Save to server via API
+      saveRowOrder(productIds).catch(err => {
+        console.error("Failed to save row order to server during reordering:", err);
+      });
+      
+      // Also keep in localStorage as backup
       const orderStr = JSON.stringify(newCustomOrder);
-      document.cookie = `inventoryRowOrder=${encodeURIComponent(orderStr)}; path=/; max-age=31536000`; // 1 year
       localStorage.setItem('inventoryRowOrder', orderStr);
+      
       console.log("Row order saved during reordering");
     } catch (e) {
       console.error("Failed to save updated order:", e);
@@ -457,6 +521,11 @@ export default function InventoryTable({ products, onViewDetails }: Props) {
               localStorage.removeItem('inventoryRowOrder');
               // Clear the cookie too
               document.cookie = "inventoryRowOrder=; path=/; max-age=0";
+              // Clear from server - save empty array
+              saveRowOrder([]).catch(err => {
+                console.error("Failed to reset row order on server:", err);
+              });
+              // Initialize default order
               initializeDefaultOrder();
               toast({
                 title: "Order Reset",

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { Product } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -219,7 +219,7 @@ export default function InventoryTable({ products, onViewDetails }: Props) {
   };
 
   return (
-    <>
+    <div>
       <div className="mb-4 flex items-center space-x-2">
         <div className="flex items-center space-x-2">
           <Input
@@ -338,6 +338,6 @@ export default function InventoryTable({ products, onViewDetails }: Props) {
           </tbody>
         </table>
       </div>
-    </>
+    </div>
   );
 }

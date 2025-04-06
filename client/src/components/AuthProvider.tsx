@@ -37,7 +37,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const { toast } = useToast();
   
   // Check authentication status on initial load and whenever the location changes
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
   
   // Helper function to check for client-side cookie
   const checkClientCookies = (): boolean => {
@@ -45,20 +45,53 @@ export function AuthProvider({ children }: AuthProviderProps) {
     return cookieStr.includes('isLoggedIn=true');
   };
   
+  // Initial authentication check on component mount
   useEffect(() => {
+    // Only run this on first load
     checkAuthStatus();
-  }, [location]);
+    
+    // Set up a periodic auth check every 15 seconds to keep session active
+    const intervalId = setInterval(() => {
+      checkAuthStatus(false);
+    }, 15000);
+    
+    return () => clearInterval(intervalId);
+  }, []);
   
-  const checkAuthStatus = async () => {
+  // Handle location changes and protection
+  useEffect(() => {
+    // If not on login page and not authenticated and not loading, redirect to login
+    if (
+      location !== '/login' && 
+      !isAuthenticated && 
+      !isLoading && 
+      isProtected
+    ) {
+      console.log('Redirecting to login due to location change:', location);
+      setLocation('/login');
+    }
+  }, [location, isAuthenticated, isLoading, isProtected]);
+  
+  const checkAuthStatus = async (showLoading = true) => {
     try {
-      setIsLoading(true);
+      if (showLoading) setIsLoading(true);
+      
+      console.log('Checking auth status, current path:', location);
       const response = await fetch('/api/auth/check');
       const data = await response.json();
+      
+      console.log('Auth status response:', data);
       
       if (response.ok) {
         // Trust the server's decision about authentication status
         setIsAuthenticated(data.isAuthenticated);
         setIsProtected(data.isProtected);
+        
+        // Redirect to login if needed
+        if (location !== '/login' && data.isProtected && !data.isAuthenticated) {
+          console.log('Auth check requires redirect to login');
+          window.location.href = '/login';
+        }
       } else {
         // If the API call fails, assume not authenticated as a fallback
         setIsAuthenticated(false);
@@ -70,7 +103,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setIsAuthenticated(false);
       setIsProtected(true);
     } finally {
-      setIsLoading(false);
+      if (showLoading) setIsLoading(false);
     }
   };
   

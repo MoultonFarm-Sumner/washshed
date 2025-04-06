@@ -42,42 +42,57 @@ export function setAuthCookie(res: Response, passwordHash: string) {
   // Set cookie that expires in 30 days
   const thirtyDaysInMs = 30 * 24 * 60 * 60 * 1000;
   
-  // Force cookie settings to work in development environment
-  res.cookie("authToken", passwordHash, {
+  console.log(`Setting auth cookie with hash: ${passwordHash.substring(0, 10)}...`);
+  
+  // For Replit environment, we need special cookie settings
+  const cookieOptions = {
     maxAge: thirtyDaysInMs,
     httpOnly: true,
-    sameSite: "none", // Changed to none to work in all contexts
     path: "/",
-    secure: false // Set to false for development environment
-  });
+    // Use lax for better compatibility across browsers
+    sameSite: "lax" as const, 
+    // Secure should be false in dev environments
+    secure: false
+  };
+  
+  // Set the auth token cookie
+  res.cookie("authToken", passwordHash, cookieOptions);
+  console.log("Auth token cookie set with options:", cookieOptions);
   
   // Add a second non-httpOnly cookie for client-side detection
-  res.cookie("isLoggedIn", "true", {
-    maxAge: thirtyDaysInMs,
-    httpOnly: false,
-    sameSite: "none",
-    path: "/",
-    secure: false
-  });
+  const clientCookieOptions = {
+    ...cookieOptions,
+    httpOnly: false
+  };
+  
+  res.cookie("isLoggedIn", "true", clientCookieOptions);
+  console.log("isLoggedIn cookie set with options:", clientCookieOptions);
 }
 
 /**
  * Clear authentication cookie
  */
 export function clearAuthCookie(res: Response) {
-  // Clear auth token cookie
-  res.clearCookie("authToken", {
+  console.log("Clearing authentication cookies");
+  
+  // Cookie options must match those used when setting the cookie
+  const cookieOptions = {
     httpOnly: true,
-    sameSite: "none",
+    sameSite: "lax" as const,
     path: "/",
     secure: false
-  });
+  };
+  
+  // Clear auth token cookie
+  res.clearCookie("authToken", cookieOptions);
+  console.log("Cleared authToken cookie");
   
   // Clear the client-side visible cookie as well
-  res.clearCookie("isLoggedIn", {
-    httpOnly: false,
-    sameSite: "none",
-    path: "/",
-    secure: false
-  });
+  const clientCookieOptions = {
+    ...cookieOptions,
+    httpOnly: false
+  };
+  
+  res.clearCookie("isLoggedIn", clientCookieOptions);
+  console.log("Cleared isLoggedIn cookie");
 }

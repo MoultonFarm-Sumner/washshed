@@ -53,6 +53,13 @@ function ProtectedRoute({ component: Component, ...rest }: { component: React.Co
 }
 
 function Router() {
+  const { isAuthenticated, isLoading } = useAuth();
+  
+  // Add a route guard to check authentication globally
+  useEffect(() => {
+    console.log("Router authentication state:", { isAuthenticated, isLoading });
+  }, [isAuthenticated, isLoading]);
+
   return (
     <Switch>
       <Route path="/login" component={LoginPage} />
@@ -61,15 +68,15 @@ function Router() {
         {() => (
           <Layout>
             <Switch>
-              <Route path="/" component={() => <ProtectedRoute component={InventoryPage} />} />
-              <Route path="/inventory" component={() => <ProtectedRoute component={InventoryPage} />} />
-              <Route path="/history" component={() => <ProtectedRoute component={BasicHistoryPage} />} />
-              <Route path="/reports" component={() => <ProtectedRoute component={EnhancedReportsPage} />} />
-              <Route path="/products" component={() => <ProtectedRoute component={ProductsPage} />} />
-              <Route path="/retail" component={() => <ProtectedRoute component={RetailOverviewPage} />} />
-              <Route path="/settings" component={() => <ProtectedRoute component={SettingsPage} />} />
-              <Route path="/fields" component={() => <ProtectedRoute component={FieldLocationsPage} />} />
-              <Route path="/fields/import" component={() => <ProtectedRoute component={DataImportPage} />} />
+              <Route path="/" component={InventoryPage} />
+              <Route path="/inventory" component={InventoryPage} />
+              <Route path="/history" component={BasicHistoryPage} />
+              <Route path="/reports" component={EnhancedReportsPage} />
+              <Route path="/products" component={ProductsPage} />
+              <Route path="/retail" component={RetailOverviewPage} />
+              <Route path="/settings" component={SettingsPage} />
+              <Route path="/fields" component={FieldLocationsPage} />
+              <Route path="/fields/import" component={DataImportPage} />
               <Route component={NotFound} />
             </Switch>
           </Layout>

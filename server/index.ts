@@ -8,13 +8,35 @@ import { requireAuth } from "./auth";
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// Add better cookie debugging
+app.use((req, res, next) => {
+  const cookies = req.headers.cookie || '';
+  console.log(`Request cookies: ${cookies}`);
+  next();
+});
+
 // Use a non-signed cookie parser with more permissive settings
 app.use(cookieParser('farm-inventory-secret', {
   decode: decodeURIComponent,
 }));
 
+// Add middleware to log the parsed cookies for debugging
+app.use((req, res, next) => {
+  console.log('Parsed cookies:', req.cookies);
+  next();
+});
+
 // Apply authentication middleware to API routes except for auth-related ones
 app.use(/^\/api(?!\/auth\/check|\/auth\/login|\/auth\/logout).*/, requireAuth);
+
+// Log authentication result
+app.use((req, res, next) => {
+  if (req.path.startsWith('/api') && !req.path.match(/^\/api\/auth\/(check|login|logout)/)) {
+    console.log(`Auth passed for ${req.method} ${req.path}`);
+  }
+  next();
+});
 
 app.use((req, res, next) => {
   const start = Date.now();

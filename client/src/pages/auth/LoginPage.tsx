@@ -33,16 +33,22 @@ export default function LoginPage() {
     try {
       setIsSubmitting(true);
       setLoginError("");
+      console.log("Attempting login with provided password");
       
       const success = await login(data.password);
+      console.log("Login result:", success);
       
       if (success) {
-        // Add a slight delay before redirecting to allow cookies to be set
+        console.log("Login successful, preparing to redirect");
+        
+        // Add a delay before redirecting to allow cookies to be set
         setTimeout(() => {
-          // Hard redirect to ensure a clean page load with updated cookies
-          window.location.href = "/";
-        }, 300);
+          console.log("Performing hard redirect to home page");
+          // Force a complete page reload to ensure cookies are properly recognized
+          window.location.replace("/");
+        }, 500);
       } else {
+        console.log("Login failed");
         setLoginError("Invalid password. Please try again.");
         setIsSubmitting(false);
       }

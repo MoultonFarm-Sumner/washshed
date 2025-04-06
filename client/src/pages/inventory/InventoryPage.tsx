@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import AddProductModal from "./AddProductModal";
 import { useIsMobile } from "@/hooks/use-mobile";
 import WholesaleKitchenTab from "./WholesaleKitchenTab";
-import { Link } from "wouter";
+
 
 
 
@@ -26,6 +26,7 @@ export default function InventoryPage() {
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [filterFieldLocation, setFilterFieldLocation] = useState<string>("");
+  const [isOrderingEnabled, setIsOrderingEnabled] = useState(false);
   
   // Fetch all products
   const {
@@ -107,7 +108,36 @@ export default function InventoryPage() {
     }
   });
 
-  // No longer needed for reordering
+  // Function to move a product up in the order
+  const moveProductUp = (productId: number) => {
+    const productIndex = products.findIndex(p => p.id === productId);
+    if (productIndex <= 0) return; // Already at the top or not found
+    
+    const updatedProducts = [...products];
+    const temp = updatedProducts[productIndex];
+    updatedProducts[productIndex] = updatedProducts[productIndex - 1];
+    updatedProducts[productIndex - 1] = temp;
+    
+    updateProductsOrder(updatedProducts);
+  };
+
+  // Function to move a product down in the order
+  const moveProductDown = (productId: number) => {
+    const productIndex = products.findIndex(p => p.id === productId);
+    if (productIndex === -1 || productIndex === products.length - 1) return; // Not found or already at the bottom
+    
+    const updatedProducts = [...products];
+    const temp = updatedProducts[productIndex];
+    updatedProducts[productIndex] = updatedProducts[productIndex + 1];
+    updatedProducts[productIndex + 1] = temp;
+    
+    updateProductsOrder(updatedProducts);
+  };
+
+  // Toggle ordering mode
+  const toggleOrderingMode = () => {
+    setIsOrderingEnabled(!isOrderingEnabled);
+  };
 
   // Filter products based on search term and field location
   const filteredProducts = products.filter((product) => {
@@ -160,11 +190,12 @@ export default function InventoryPage() {
           >
             <Plus className="mr-1 h-4 w-4" /> Add New Crop
           </Button>
-          <Link href="/order-edit">
-            <Button variant="outline">
-              Edit Order
-            </Button>
-          </Link>
+          <Button 
+            variant={isOrderingEnabled ? "default" : "outline"} 
+            onClick={toggleOrderingMode}
+          >
+            {isOrderingEnabled ? "Done Ordering" : "Edit Order"}
+          </Button>
         </div>
       </div>
 
@@ -223,6 +254,9 @@ export default function InventoryPage() {
                 <InventoryTable 
                   products={filteredProducts.filter(p => !["Wholesale", "Kitchen"].includes(p.fieldLocation))} 
                   onViewDetails={handleViewProductDetails}
+                  isOrderingEnabled={isOrderingEnabled}
+                  onMoveUp={moveProductUp}
+                  onMoveDown={moveProductDown}
                 />
               </div>
             </CardContent>

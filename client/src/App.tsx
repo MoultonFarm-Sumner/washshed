@@ -12,7 +12,6 @@ import RetailOverviewPage from "@/pages/retail/RetailOverviewPage";
 import SettingsPage from "@/pages/settings/SettingsPage";
 import FieldLocationsPage from "@/pages/fields/FieldLocationsPage";
 import DataImportPage from "@/pages/fields/DataImportPage";
-import OrderEditorPage from "@/pages/order/OrderEditorPage";
 
 function Router() {
   return (
@@ -27,7 +26,7 @@ function Router() {
         <Route path="/settings" component={SettingsPage} />
         <Route path="/fields" component={FieldLocationsPage} />
         <Route path="/fields/import" component={DataImportPage} />
-        <Route path="/order-edit" component={OrderEditorPage} />
+
         <Route component={NotFound} />
       </Switch>
     </Layout>

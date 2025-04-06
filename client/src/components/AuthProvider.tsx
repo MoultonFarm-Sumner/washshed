@@ -1,6 +1,5 @@
 import { createContext, useState, useContext, useEffect, ReactNode } from 'react';
 import { useToast } from "@/hooks/use-toast";
-import { useLocation } from "wouter";
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -36,9 +35,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const { toast } = useToast();
   
-  // Check authentication status on initial load and whenever the location changes
-  const [location, setLocation] = useLocation();
-  
   // Helper function to check for client-side cookie
   const checkClientCookies = (): boolean => {
     const cookieStr = document.cookie;
@@ -58,25 +54,40 @@ export function AuthProvider({ children }: AuthProviderProps) {
     return () => clearInterval(intervalId);
   }, []);
   
-  // Handle location changes and protection
+  // Handle path changes for authentication
   useEffect(() => {
-    // If not on login page and not authenticated and not loading, redirect to login
-    if (
-      location !== '/login' && 
-      !isAuthenticated && 
-      !isLoading && 
-      isProtected
-    ) {
-      console.log('Redirecting to login due to location change:', location);
-      setLocation('/login');
-    }
-  }, [location, isAuthenticated, isLoading, isProtected]);
+    // Add event listener for pathname changes
+    const handlePathChange = () => {
+      const currentPath = window.location.pathname;
+      // Check if we need to redirect
+      if (
+        currentPath !== '/login' && 
+        !isAuthenticated && 
+        !isLoading && 
+        isProtected
+      ) {
+        console.log('Redirecting to login from path:', currentPath);
+        window.location.href = '/login';
+      }
+    };
+    
+    // Listen for popstate to catch browser back/forward navigation
+    window.addEventListener('popstate', handlePathChange);
+    
+    // Initial check
+    handlePathChange();
+    
+    return () => {
+      window.removeEventListener('popstate', handlePathChange);
+    };
+  }, [isAuthenticated, isLoading, isProtected]);
   
   const checkAuthStatus = async (showLoading = true) => {
     try {
       if (showLoading) setIsLoading(true);
       
-      console.log('Checking auth status, current path:', location);
+      const currentPath = window.location.pathname;
+      console.log('Checking auth status, current path:', currentPath);
       const response = await fetch('/api/auth/check');
       const data = await response.json();
       
@@ -88,7 +99,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         setIsProtected(data.isProtected);
         
         // Redirect to login if needed
-        if (location !== '/login' && data.isProtected && !data.isAuthenticated) {
+        if (currentPath !== '/login' && data.isProtected && !data.isAuthenticated) {
           console.log('Auth check requires redirect to login');
           window.location.href = '/login';
         }

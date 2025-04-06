@@ -39,14 +39,16 @@ export default function LoginPage() {
       console.log("Login result:", success);
       
       if (success) {
-        console.log("Login successful, preparing to redirect");
+        console.log("Login successful, preparing for full page reload");
         
-        // Add a delay before redirecting to allow cookies to be set
+        // Show success message before redirecting
+        setLoginError("");
+        
+        // Force a full page reload after login to ensure cookies are recognized
         setTimeout(() => {
-          console.log("Performing hard redirect to home page");
-          // Force a complete page reload to ensure cookies are properly recognized
-          window.location.replace("/");
-        }, 500);
+          console.log("Performing full page reload to inventory page");
+          window.location.href = "/inventory";
+        }, 800);
       } else {
         console.log("Login failed");
         setLoginError("Invalid password. Please try again.");

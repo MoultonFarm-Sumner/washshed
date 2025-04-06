@@ -1,13 +1,15 @@
-import { useLocation, Link } from "wouter";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/components/AuthProvider";
 import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
 
 export default function Header() {
-  const [location, setLocation] = useLocation();
   const [currentDate, setCurrentDate] = useState<string>("");
   const { isAuthenticated, logout } = useAuth();
+  
+  // Get current path to determine active tab
+  const currentPath = window.location.pathname;
+  const activePath = currentPath === "/" ? "/inventory" : currentPath;
 
   useEffect(() => {
     const date = new Date();
@@ -30,12 +32,23 @@ export default function Header() {
     { name: "Product Management", path: "/products" },
     { name: "Settings", path: "/settings" },
   ];
-
-  // Handle the root path by redirecting to /inventory
-  const activePath = location === "/" ? "/inventory" : location;
+  
+  const handleNavigation = (path: string) => (e: React.MouseEvent) => {
+    // Prevent default behavior
+    e.preventDefault();
+    
+    // Only refresh if we're navigating to a different page
+    if (activePath !== path) {
+      console.log(`Navigating from ${activePath} to ${path}`);
+      // Use window.location for server-side navigation
+      window.location.href = path;
+    }
+  };
   
   const handleLogout = async () => {
     await logout();
+    // Force full page reload after logout
+    window.location.href = "/login";
   };
 
   return (
@@ -61,9 +74,11 @@ export default function Header() {
       <div className="container mx-auto px-4 text-sm font-medium">
         <nav className="flex overflow-x-auto hide-scrollbar">
           {tabs.map((tab) => (
-            <Link
+            <a
               key={tab.path}
               href={tab.path}
+              onClick={handleNavigation(tab.path)}
+              className="no-underline text-white"
             >
               <div
                 className={`px-4 py-3 focus:outline-none whitespace-nowrap cursor-pointer ${
@@ -74,7 +89,7 @@ export default function Header() {
               >
                 {tab.name}
               </div>
-            </Link>
+            </a>
           ))}
         </nav>
       </div>

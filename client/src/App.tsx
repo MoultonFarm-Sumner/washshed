@@ -1,5 +1,4 @@
-import { Switch, Route, Redirect, useLocation } from "wouter";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -16,73 +15,112 @@ import DataImportPage from "@/pages/fields/DataImportPage";
 import LoginPage from "@/pages/auth/LoginPage";
 import { AuthProvider, useAuth } from "@/components/AuthProvider";
 
-// Protected route component
-function ProtectedRoute({ component: Component, ...rest }: { component: React.ComponentType<any>, path?: string }) {
+// Simple path-based router with no client-side routing
+function SimpleRouter() {
   const { isAuthenticated, isProtected, isLoading } = useAuth();
-  const [_, navigate] = useLocation();
+  const [currentPath, setCurrentPath] = useState(window.location.pathname);
   
+  // Log initial path
+  console.log("Current path:", currentPath);
+  
+  // Handle authentication redirects
   useEffect(() => {
-    // Only redirect if not loading and authentication is required but not present
-    if (!isLoading && isProtected && !isAuthenticated) {
-      console.log("Not authenticated. Redirecting to login page...");
-      // Use window.location for a full page redirect rather than client-side routing
-      // This ensures cookies are properly recognized after login
-      window.location.href = "/login";
+    if (isLoading) return;
+    
+    console.log("Auth check complete:", { isAuthenticated, isProtected });
+    
+    // Redirect to login if not authenticated and not on login page
+    if (!isAuthenticated && isProtected && currentPath !== '/login') {
+      console.log("Redirecting to login page");
+      window.location.href = '/login';
+      return;
     }
-  }, [isAuthenticated, isProtected, isLoading]);
+    
+    // Redirect to inventory if on root and authenticated
+    if (currentPath === '/' && isAuthenticated) {
+      console.log("Redirecting to inventory from root");
+      window.location.href = '/inventory';
+    }
+  }, [isAuthenticated, isProtected, isLoading, currentPath]);
   
-  if (isLoading) {
-    console.log("Authentication check in progress...");
-    // Show loading state while checking authentication
-    return <div className="flex items-center justify-center min-h-screen">
-      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-    </div>;
-  }
-  
-  if (isProtected && !isAuthenticated) {
-    console.log("Protected route accessed without authentication");
-    // Show loading instead of an immediate redirect to prevent flickering
-    return <div className="flex items-center justify-center min-h-screen">
-      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-    </div>;
-  }
-  
-  console.log("Authentication successful, rendering protected component");
-  // Render the component if authenticated or the site is not protected
-  return <Component {...rest} />;
-}
-
-function Router() {
-  const { isAuthenticated, isLoading } = useAuth();
-  
-  // Add a route guard to check authentication globally
+  // Update current path when it changes
   useEffect(() => {
-    console.log("Router authentication state:", { isAuthenticated, isLoading });
-  }, [isAuthenticated, isLoading]);
-
+    const handleLocationChange = () => {
+      const newPath = window.location.pathname;
+      console.log("Path changed to:", newPath);
+      setCurrentPath(newPath);
+    };
+    
+    // Listen for back/forward navigation
+    window.addEventListener('popstate', handleLocationChange);
+    
+    return () => {
+      window.removeEventListener('popstate', handleLocationChange);
+    };
+  }, []);
+  
+  // Show loader during authentication check
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+        <div className="ml-3">Checking authentication...</div>
+      </div>
+    );
+  }
+  
+  // Show login page
+  if (currentPath === '/login') {
+    return <LoginPage />;
+  }
+  
+  // Render content based on current path
+  let content;
+  switch (currentPath) {
+    case '/':
+    case '/inventory':
+      content = <InventoryPage />;
+      break;
+    case '/history':
+      content = <BasicHistoryPage />;
+      break;
+    case '/reports':
+      content = <EnhancedReportsPage />;
+      break;
+    case '/products':
+      content = <ProductsPage />;
+      break;
+    case '/retail':
+      content = <RetailOverviewPage />;
+      break;
+    case '/settings':
+      content = <SettingsPage />;
+      break;
+    case '/fields':
+      content = <FieldLocationsPage />;
+      break;
+    case '/fields/import':
+      content = <DataImportPage />;
+      break;
+    default:
+      content = <NotFound />;
+  }
+  
   return (
-    <Switch>
-      <Route path="/login" component={LoginPage} />
-      
-      <Route path="/">
-        {() => (
-          <Layout>
-            <Switch>
-              <Route path="/" component={InventoryPage} />
-              <Route path="/inventory" component={InventoryPage} />
-              <Route path="/history" component={BasicHistoryPage} />
-              <Route path="/reports" component={EnhancedReportsPage} />
-              <Route path="/products" component={ProductsPage} />
-              <Route path="/retail" component={RetailOverviewPage} />
-              <Route path="/settings" component={SettingsPage} />
-              <Route path="/fields" component={FieldLocationsPage} />
-              <Route path="/fields/import" component={DataImportPage} />
-              <Route component={NotFound} />
-            </Switch>
-          </Layout>
-        )}
-      </Route>
-    </Switch>
+    <>
+      {(!isAuthenticated && isProtected) ? (
+        // Show loading if we're about to redirect to login
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+          <div className="ml-3">Redirecting to login...</div>
+        </div>
+      ) : (
+        // Show the main layout with content
+        <Layout>
+          {content}
+        </Layout>
+      )}
+    </>
   );
 }
 
@@ -90,7 +128,7 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <Router />
+        <SimpleRouter />
         <Toaster />
       </AuthProvider>
     </QueryClientProvider>

@@ -1,11 +1,11 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Product } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Minus } from "lucide-react";
+import { Plus, Minus, ArrowUp, ArrowDown, MoveDown, MoveUp } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -13,21 +13,79 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 interface Props {
   products: Product[];
   onViewDetails: (product: Product) => void;
 }
 
+// Extended Product type with display order
+interface ProductWithOrder extends Product {
+  displayOrder: number;
+}
+
 export default function InventoryTable({ products, onViewDetails }: Props) {
   const { toast } = useToast();
   const [editableValues, setEditableValues] = useState<{ [key: string]: any }>({});
   const [selectedRowNumber, setSelectedRowNumber] = useState<string>("");
+  const [customOrder, setCustomOrder] = useState<{[key: number]: number}>({});
+  const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
+  const [selectedProductIdForReorder, setSelectedProductIdForReorder] = useState<number | null>(null);
+  const [newRowNumber, setNewRowNumber] = useState<string>(""); 
   
-  // Maintain a stable sort by ID to prevent rows from jumping around
-  const stableProducts = useMemo(() => {
-    return [...products].sort((a, b) => a.id - b.id);
+  // Load custom order from localStorage or initialize if empty
+  useEffect(() => {
+    // Try to load from localStorage first
+    const savedOrder = localStorage.getItem('inventoryRowOrder');
+    
+    if (savedOrder) {
+      try {
+        const parsedOrder = JSON.parse(savedOrder);
+        setCustomOrder(parsedOrder);
+      } catch (e) {
+        // If parsing fails, initialize with default order
+        initializeDefaultOrder();
+      }
+    } else if (Object.keys(customOrder).length === 0 && products.length > 0) {
+      // No saved order and no current order, initialize with default
+      initializeDefaultOrder();
+    }
   }, [products]);
+  
+  // Save order to localStorage whenever it changes
+  useEffect(() => {
+    if (Object.keys(customOrder).length > 0) {
+      localStorage.setItem('inventoryRowOrder', JSON.stringify(customOrder));
+    }
+  }, [customOrder]);
+  
+  // Initialize with default ordering by ID
+  const initializeDefaultOrder = () => {
+    const initialOrder: {[key: number]: number} = {};
+    products.forEach((product, index) => {
+      initialOrder[product.id] = index + 1;
+    });
+    setCustomOrder(initialOrder);
+  };
+
+  // Maintain a stable sort with custom ordering
+  const stableProducts = useMemo(() => {
+    const productsWithOrder: ProductWithOrder[] = products.map(product => ({
+      ...product,
+      displayOrder: customOrder[product.id] || product.id // fallback to id if no custom order
+    }));
+    
+    return [...productsWithOrder].sort((a, b) => a.displayOrder - b.displayOrder);
+  }, [products, customOrder]);
   
   // Handle row number selection
   const handleRowSelect = () => {
@@ -218,9 +276,76 @@ export default function InventoryTable({ products, onViewDetails }: Props) {
     );
   };
 
+  // Move a row to a new position
+  const handleRowReorder = () => {
+    if (!selectedProductIdForReorder || !newRowNumber) return;
+    
+    const productId = selectedProductIdForReorder;
+    const targetPosition = parseInt(newRowNumber);
+    
+    if (isNaN(targetPosition) || targetPosition < 1 || targetPosition > stableProducts.length) {
+      toast({
+        title: "Invalid Row Number",
+        description: `Please enter a number between 1 and ${stableProducts.length}`,
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Get current product index
+    const currentIndex = stableProducts.findIndex(p => p.id === productId);
+    if (currentIndex === -1) return;
+    
+    // Calculate new order
+    const newCustomOrder = { ...customOrder };
+    
+    // The current position is 1-indexed in the UI but 0-indexed in the array
+    const currentPosition = currentIndex + 1;
+    
+    // If moving to the same position, do nothing
+    if (currentPosition === targetPosition) {
+      setIsOrderModalOpen(false);
+      return;
+    }
+    
+    // Moving up (lower number)
+    if (targetPosition < currentPosition) {
+      // Increment positions for products that will be pushed down
+      stableProducts.forEach(product => {
+        const productPos = customOrder[product.id] || 0;
+        if (productPos >= targetPosition && productPos < currentPosition) {
+          newCustomOrder[product.id] = productPos + 1;
+        }
+      });
+    } 
+    // Moving down (higher number)
+    else {
+      // Decrement positions for products that will be pushed up
+      stableProducts.forEach(product => {
+        const productPos = customOrder[product.id] || 0;
+        if (productPos > currentPosition && productPos <= targetPosition) {
+          newCustomOrder[product.id] = productPos - 1;
+        }
+      });
+    }
+    
+    // Set the new position for the moved product
+    newCustomOrder[productId] = targetPosition;
+    
+    setCustomOrder(newCustomOrder);
+    setIsOrderModalOpen(false);
+    setSelectedProductIdForReorder(null);
+    setNewRowNumber("");
+    
+    toast({
+      title: "Row Order Updated",
+      description: `Product moved to row position ${targetPosition}`,
+    });
+  };
+
   return (
     <div>
-      <div className="mb-4 flex items-center space-x-2">
+      <div className="mb-4 flex items-center space-x-2 justify-between">
         <div className="flex items-center space-x-2">
           <Input
             type="number"
@@ -239,10 +364,61 @@ export default function InventoryTable({ products, onViewDetails }: Props) {
             Go
           </Button>
         </div>
-        <div className="text-sm text-gray-500">
-          Total rows: {stableProducts.length}
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              // Reset to default ordering by ID
+              localStorage.removeItem('inventoryRowOrder');
+              initializeDefaultOrder();
+              toast({
+                title: "Order Reset",
+                description: "Row order has been reset to default",
+              });
+            }}
+          >
+            Reset Order
+          </Button>
+          <div className="text-sm text-gray-500">
+            Total rows: {stableProducts.length}
+          </div>
         </div>
       </div>
+      
+      {/* Dialog for changing row position */}
+      <Dialog open={isOrderModalOpen} onOpenChange={setIsOrderModalOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Change Row Position</DialogTitle>
+            <DialogDescription>
+              Enter the new row number for this item.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="flex items-center gap-4">
+              <label htmlFor="new-row" className="text-right">
+                New Position:
+              </label>
+              <Input
+                id="new-row"
+                type="number"
+                value={newRowNumber}
+                onChange={(e) => setNewRowNumber(e.target.value)}
+                min={1}
+                max={stableProducts.length}
+                className="col-span-3"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsOrderModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleRowReorder}>Move</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
@@ -291,7 +467,22 @@ export default function InventoryTable({ products, onViewDetails }: Props) {
                 onClick={() => onViewDetails(product)}
               >
                 <td className="px-4 py-3 whitespace-nowrap text-sm text-center font-semibold">
-                  {index + 1}
+                  <div className="flex items-center justify-center gap-2">
+                    <span>{index + 1}</span>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-5 w-5 p-0"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedProductIdForReorder(product.id);
+                        setNewRowNumber((index + 1).toString());
+                        setIsOrderModalOpen(true);
+                      }}
+                    >
+                      <MoveUp className="h-3 w-3" />
+                    </Button>
+                  </div>
                 </td>
                 <td className="px-4 py-3 whitespace-nowrap text-sm">
                   {renderFieldLocationDropdown(product)}

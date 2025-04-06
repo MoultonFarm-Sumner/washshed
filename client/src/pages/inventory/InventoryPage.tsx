@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import AddProductModal from "./AddProductModal";
 import { useIsMobile } from "@/hooks/use-mobile";
 import WholesaleKitchenTab from "./WholesaleKitchenTab";
+import { Link } from "wouter";
 
 
 
@@ -152,12 +153,19 @@ export default function InventoryPage() {
             Manage your farm inventory across all locations
           </p>
         </div>
-        <Button 
-          onClick={() => setIsAddModalOpen(true)} 
-          className="bg-green-600 hover:bg-green-700 text-white"
-        >
-          <Plus className="mr-1 h-4 w-4" /> Add New Crop
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            onClick={() => setIsAddModalOpen(true)} 
+            className="bg-green-600 hover:bg-green-700 text-white"
+          >
+            <Plus className="mr-1 h-4 w-4" /> Add New Crop
+          </Button>
+          <Link href="/order/edit">
+            <Button variant="outline">
+              Edit Order
+            </Button>
+          </Link>
+        </div>
       </div>
 
       <Card className="mb-6">

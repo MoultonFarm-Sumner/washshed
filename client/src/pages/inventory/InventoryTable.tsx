@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Minus, ArrowUp, ArrowDown } from "lucide-react";
+import { Plus, Minus } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -17,18 +17,9 @@ import {
 interface Props {
   products: Product[];
   onViewDetails: (product: Product) => void;
-  isOrderingEnabled?: boolean;
-  onMoveUp?: (productId: number) => void;
-  onMoveDown?: (productId: number) => void;
 }
 
-export default function InventoryTable({ 
-  products, 
-  onViewDetails,
-  isOrderingEnabled = false,
-  onMoveUp,
-  onMoveDown 
-}: Props) {
+export default function InventoryTable({ products, onViewDetails }: Props) {
   const { toast } = useToast();
   const [editableValues, setEditableValues] = useState<{ [key: string]: any }>({});
   
@@ -280,46 +271,17 @@ export default function InventoryTable({
                 {renderEditableTextField(product, "retailNotes")}
               </td>
               <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">
-                <div className="flex items-center space-x-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onViewDetails(product);
-                    }}
-                    className="px-2 py-1 text-xs"
-                  >
-                    Details
-                  </Button>
-                  
-                  {isOrderingEnabled && onMoveUp && onMoveDown && (
-                    <div className="flex flex-col gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6 p-0"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onMoveUp(product.id);
-                        }}
-                      >
-                        <ArrowUp className="h-3 w-3" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6 p-0"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onMoveDown(product.id);
-                        }}
-                      >
-                        <ArrowDown className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  )}
-                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onViewDetails(product);
+                  }}
+                  className="px-2 py-1 text-xs"
+                >
+                  Details
+                </Button>
               </td>
             </tr>
           ))}

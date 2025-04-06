@@ -17,7 +17,6 @@ import WholesaleKitchenTab from "./WholesaleKitchenTab";
 
 
 
-
 export default function InventoryPage() {
   const { toast } = useToast();
   const isMobile = useIsMobile();
@@ -26,7 +25,6 @@ export default function InventoryPage() {
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [filterFieldLocation, setFilterFieldLocation] = useState<string>("");
-  const [isOrderingEnabled, setIsOrderingEnabled] = useState(false);
   
   // Fetch all products
   const {
@@ -108,36 +106,7 @@ export default function InventoryPage() {
     }
   });
 
-  // Function to move a product up in the order
-  const moveProductUp = (productId: number) => {
-    const productIndex = products.findIndex(p => p.id === productId);
-    if (productIndex <= 0) return; // Already at the top or not found
-    
-    const updatedProducts = [...products];
-    const temp = updatedProducts[productIndex];
-    updatedProducts[productIndex] = updatedProducts[productIndex - 1];
-    updatedProducts[productIndex - 1] = temp;
-    
-    updateProductsOrder(updatedProducts);
-  };
-
-  // Function to move a product down in the order
-  const moveProductDown = (productId: number) => {
-    const productIndex = products.findIndex(p => p.id === productId);
-    if (productIndex === -1 || productIndex === products.length - 1) return; // Not found or already at the bottom
-    
-    const updatedProducts = [...products];
-    const temp = updatedProducts[productIndex];
-    updatedProducts[productIndex] = updatedProducts[productIndex + 1];
-    updatedProducts[productIndex + 1] = temp;
-    
-    updateProductsOrder(updatedProducts);
-  };
-
-  // Toggle ordering mode
-  const toggleOrderingMode = () => {
-    setIsOrderingEnabled(!isOrderingEnabled);
-  };
+  // No longer needed for reordering
 
   // Filter products based on search term and field location
   const filteredProducts = products.filter((product) => {
@@ -183,20 +152,12 @@ export default function InventoryPage() {
             Manage your farm inventory across all locations
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button 
-            onClick={() => setIsAddModalOpen(true)} 
-            className="bg-green-600 hover:bg-green-700 text-white"
-          >
-            <Plus className="mr-1 h-4 w-4" /> Add New Crop
-          </Button>
-          <Button 
-            variant={isOrderingEnabled ? "default" : "outline"} 
-            onClick={toggleOrderingMode}
-          >
-            {isOrderingEnabled ? "Done Ordering" : "Edit Order"}
-          </Button>
-        </div>
+        <Button 
+          onClick={() => setIsAddModalOpen(true)} 
+          className="bg-green-600 hover:bg-green-700 text-white"
+        >
+          <Plus className="mr-1 h-4 w-4" /> Add New Crop
+        </Button>
       </div>
 
       <Card className="mb-6">
@@ -254,9 +215,6 @@ export default function InventoryPage() {
                 <InventoryTable 
                   products={filteredProducts.filter(p => !["Wholesale", "Kitchen"].includes(p.fieldLocation))} 
                   onViewDetails={handleViewProductDetails}
-                  isOrderingEnabled={isOrderingEnabled}
-                  onMoveUp={moveProductUp}
-                  onMoveDown={moveProductDown}
                 />
               </div>
             </CardContent>

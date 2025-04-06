@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import InventoryTable from "./InventoryTable";
+import DraggableInventoryTable from "./DraggableInventoryTable";
 import ProductDetailsModal from "./ProductDetailsModal";
 import { Product } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -212,9 +212,10 @@ export default function InventoryPage() {
             </CardHeader>
             <CardContent>
               <div className="bg-white rounded-lg">
-                <InventoryTable 
+                <DraggableInventoryTable 
                   products={filteredProducts.filter(p => !["Wholesale", "Kitchen"].includes(p.fieldLocation))} 
                   onViewDetails={handleViewProductDetails}
+                  onOrderChanged={(reorderedProducts) => updateProductsOrder(reorderedProducts)}
                 />
               </div>
             </CardContent>

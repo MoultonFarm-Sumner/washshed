@@ -523,32 +523,6 @@ export default function InventoryTable({ products, onViewDetails }: Props) {
           </Button>
         </div>
         <div className="flex items-center space-x-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              // First, clear from server - save empty array
-              saveRowOrder([])
-                .then(() => {
-                  console.log("Successfully reset row order on server");
-                  // Only after server is cleared, clear localStorage
-                  localStorage.removeItem('inventoryRowOrder');
-                  // Clear any cookies
-                  document.cookie = "inventoryRowOrder=; path=/; max-age=0";
-                })
-                .catch(err => {
-                  console.error("Failed to reset row order on server:", err);
-                });
-              // Initialize default order
-              initializeDefaultOrder();
-              toast({
-                title: "Order Reset",
-                description: "Row order has been reset to default",
-              });
-            }}
-          >
-            Reset Order
-          </Button>
           <div className="text-sm text-gray-500">
             Total rows: {stableProducts.length}
           </div>

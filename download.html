@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Farm Inventory App - Local Setup</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #2980b9;
+            margin-top: 30px;
+        }
+        .download-btn {
+            display: inline-block;
+            background-color: #27ae60;
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: bold;
+            margin: 20px 0;
+            transition: background-color 0.3s;
+        }
+        .download-btn:hover {
+            background-color: #2ecc71;
+        }
+        .steps {
+            background-color: #f9f9f9;
+            border-left: 4px solid #3498db;
+            padding: 15px 20px;
+            margin: 20px 0;
+        }
+        .steps li {
+            margin-bottom: 10px;
+        }
+        code {
+            background-color: #f1f1f1;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: Consolas, Monaco, 'Andale Mono', monospace;
+        }
+        .note {
+            background-color: #fffde7;
+            border-left: 4px solid #fbc02d;
+            padding: 15px 20px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Farm Inventory App - Local Setup</h1>
+    
+    <p>This page provides everything you need to run the Farm Inventory Management System on your local machine.</p>
+    
+    <a href="/workspace/farm-inventory-local.zip" download class="download-btn">Download Local Setup Package</a>
+    
+    <h2>Setup Instructions</h2>
+    
+    <div class="steps">
+        <h3>For Windows Users:</h3>
+        <ol>
+            <li>Download the zip file using the button above</li>
+            <li>Extract the zip file to a folder on your computer</li>
+            <li>Open the extracted folder</li>
+            <li>Double-click the <code>local-setup/start.bat</code> file</li>
+            <li>The app will automatically install dependencies and start</li>
+            <li>Your default browser will open to <code>http://localhost:3000</code></li>
+        </ol>
+    </div>
+    
+    <div class="steps">
+        <h3>For Mac/Linux Users:</h3>
+        <ol>
+            <li>Download the zip file using the button above</li>
+            <li>Extract the zip file to a folder on your computer</li>
+            <li>Open Terminal</li>
+            <li>Navigate to the extracted folder: <code>cd path/to/extracted/folder</code></li>
+            <li>Make the start script executable: <code>chmod +x local-setup/start.sh</code></li>
+            <li>Run the start script: <code>./local-setup/start.sh</code></li>
+            <li>Open your browser and go to <code>http://localhost:3000</code></li>
+        </ol>
+    </div>
+    
+    <h2>How It Works</h2>
+    
+    <p>The setup package includes:</p>
+    
+    <ul>
+        <li>A smart server script that tries to connect to the database</li>
+        <li>Automatic fallback to in-memory storage if database connection fails</li>
+        <li>Pre-configured database credentials (in the .env file)</li>
+        <li>Start scripts for both Windows and Mac/Linux</li>
+    </ul>
+    
+    <div class="note">
+        <p><strong>Note:</strong> When you run the app for the first time, it will automatically install the required dependencies. This may take a few minutes depending on your internet connection.</p>
+    </div>
+    
+    <h2>Troubleshooting Database Connection</h2>
+    
+    <p>If you encounter database connection errors:</p>
+    
+    <ol>
+        <li>Check if your computer can connect to external databases (some work or school networks may block these connections)</li>
+        <li>Ensure your firewall is not blocking the connection</li>
+        <li>The app will automatically fall back to in-memory storage if the database connection fails</li>
+    </ol>
+    
+    <h2>Need More Help?</h2>
+    
+    <p>For more detailed information, refer to the README.md file included in the download package.</p>
+</body>
+</html>

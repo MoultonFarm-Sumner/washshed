@@ -1,0 +1,197 @@
+ogs/farm-inventory-error.log last 100 lines:
+0|farm-inv |   },
+0|farm-inv |   [Symbol(kType)]: 'error',
+0|farm-inv |   [Symbol(kError)]: Error: connect ECONNREFUSED 127.0.0.1:443
+0|farm-inv |       at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) {
+0|farm-inv |     errno: -111,
+0|farm-inv |     code: 'ECONNREFUSED',
+0|farm-inv |     syscall: 'connect',
+0|farm-inv |     address: '127.0.0.1',
+0|farm-inv |     port: 443
+0|farm-inv |   },
+0|farm-inv |   [Symbol(kMessage)]: 'connect ECONNREFUSED 127.0.0.1:443'
+0|farm-inv | }
+0|farm-inv | Error initializing database: ErrorEvent {
+0|farm-inv |   [Symbol(kTarget)]: WebSocket {
+0|farm-inv |     _events: [Object: null prototype] {
+0|farm-inv |       error: [Function],
+0|farm-inv |       message: [Function],
+0|farm-inv |       close: [Function],
+0|farm-inv |       open: [Function]
+0|farm-inv |     },
+0|farm-inv |     _eventsCount: 4,
+0|farm-inv |     _maxListeners: undefined,
+0|farm-inv |     _binaryType: 'arraybuffer',
+0|farm-inv |     _closeCode: 1006,
+0|farm-inv |     _closeFrameReceived: false,
+0|farm-inv |     _closeFrameSent: false,
+0|farm-inv |     _closeMessage: <Buffer >,
+0|farm-inv |     _closeTimer: null,
+0|farm-inv |     _errorEmitted: true,
+0|farm-inv |     _extensions: {},
+0|farm-inv |     _paused: false,
+0|farm-inv |     _protocol: '',
+0|farm-inv |     _readyState: 3,
+0|farm-inv |     _receiver: null,
+0|farm-inv |     _sender: null,
+0|farm-inv |     _socket: null,
+0|farm-inv |     _bufferedAmount: 0,
+0|farm-inv |     _isServer: false,
+0|farm-inv |     _redirects: 0,
+0|farm-inv |     _autoPong: true,
+0|farm-inv |     _url: 'wss://localhost/v2',
+0|farm-inv |     _req: null,
+0|farm-inv |     [Symbol(shapeMode)]: false,
+0|farm-inv |     [Symbol(kCapture)]: false
+0|farm-inv |   },
+0|farm-inv |   [Symbol(kType)]: 'error',
+0|farm-inv |   [Symbol(kError)]: Error: connect ECONNREFUSED 127.0.0.1:443
+0|farm-inv |       at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) {
+0|farm-inv |     errno: -111,
+0|farm-inv |     code: 'ECONNREFUSED',
+0|farm-inv |     syscall: 'connect',
+0|farm-inv |     address: '127.0.0.1',
+0|farm-inv |     port: 443
+0|farm-inv |   },
+0|farm-inv |   [Symbol(kMessage)]: 'connect ECONNREFUSED 127.0.0.1:443'
+0|farm-inv | }
+0|farm-inv | Error initializing database: ErrorEvent {
+0|farm-inv |   [Symbol(kTarget)]: WebSocket {
+0|farm-inv |     _events: [Object: null prototype] {
+0|farm-inv |       error: [Function],
+0|farm-inv |       message: [Function],
+0|farm-inv |       close: [Function],
+0|farm-inv |       open: [Function]
+0|farm-inv |     },
+0|farm-inv |     _eventsCount: 4,
+0|farm-inv |     _maxListeners: undefined,
+0|farm-inv |     _binaryType: 'arraybuffer',
+0|farm-inv |     _closeCode: 1006,
+0|farm-inv |     _closeFrameReceived: false,
+0|farm-inv |     _closeFrameSent: false,
+0|farm-inv |     _closeMessage: <Buffer >,
+0|farm-inv |     _closeTimer: null,
+0|farm-inv |     _errorEmitted: true,
+0|farm-inv |     _extensions: {},
+0|farm-inv |     _paused: false,
+0|farm-inv |     _protocol: '',
+0|farm-inv |     _readyState: 3,
+0|farm-inv |     _receiver: null,
+0|farm-inv |     _sender: null,
+0|farm-inv |     _socket: null,
+0|farm-inv |     _bufferedAmount: 0,
+0|farm-inv |     _isServer: false,
+0|farm-inv |     _redirects: 0,
+0|farm-inv |     _autoPong: true,
+0|farm-inv |     _url: 'wss://localhost/v2',
+0|farm-inv |     _req: null,
+0|farm-inv |     [Symbol(shapeMode)]: false,
+0|farm-inv |     [Symbol(kCapture)]: false
+0|farm-inv |   },
+0|farm-inv |   [Symbol(kType)]: 'error',
+0|farm-inv |   [Symbol(kError)]: Error: connect ECONNREFUSED 127.0.0.1:443
+0|farm-inv |       at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) {
+0|farm-inv |     errno: -111,
+0|farm-inv |     code: 'ECONNREFUSED',
+0|farm-inv |     syscall: 'connect',
+0|farm-inv |     address: '127.0.0.1',
+0|farm-inv |     port: 443
+0|farm-inv |   },
+0|farm-inv |   [Symbol(kMessage)]: 'connect ECONNREFUSED 127.0.0.1:443'
+0|farm-inv | }
+
+/root/.pm2/logs/farm-inventory-out.log last 100 lines:
+0|farm-inv | Initializing database...
+0|farm-inv | 3:34:13 PM [express] Database initialization failed: [object Object]
+0|farm-inv | Initializing database...
+0|farm-inv | 3:34:14 PM [express] Database initialization failed: [object Object]
+0|farm-inv | Initializing database...
+0|farm-inv | 3:34:15 PM [express] Database initialization failed: [object Object]
+0|farm-inv | Initializing database...
+0|farm-inv | 3:34:15 PM [express] Database initialization failed: [object Object]
+0|farm-inv | Initializing database...
+0|farm-inv | 3:35:35 PM [express] Database initialization failed: [object Object]
+0|farm-inv | Initializing database...
+0|farm-inv | 3:35:36 PM [express] Database initialization failed: [object Object]
+0|farm-inv | Initializing database...
+0|farm-inv | 3:35:36 PM [express] Database initialization failed: [object Object]
+0|farm-inv | Initializing database...
+0|farm-inv | 3:35:37 PM [express] Database initialization failed: [object Object]
+0|farm-inv | Initializing database...
+0|farm-inv | 3:35:37 PM [express] Database initialization failed: [object Object]
+0|farm-inv | Initializing database...
+0|farm-inv | 3:35:38 PM [express] Database initialization failed: [object Object]
+0|farm-inv | Initializing database...
+0|farm-inv | 3:35:39 PM [express] Database initialization failed: [object Object]
+0|farm-inv | Initializing database...
+0|farm-inv | 3:35:39 PM [express] Database initialization failed: [object Object]
+0|farm-inv | Initializing database...
+0|farm-inv | 3:35:40 PM [express] Database initialization failed: [object Object]
+0|farm-inv | Initializing database...
+0|farm-inv | 3:35:41 PM [express] Database initialization failed: [object Object]
+0|farm-inv | Initializing database...
+0|farm-inv | 3:35:41 PM [express] Database initialization failed: [object Object]
+0|farm-inv | Initializing database...
+0|farm-inv | 3:35:42 PM [express] Database initialization failed: [object Object]
+0|farm-inv | Initializing database...
+0|farm-inv | 3:35:43 PM [express] Database initialization failed: [object Object]
+0|farm-inv | Initializing database...
+0|farm-inv | 3:35:44 PM [express] Database initialization failed: [object Object]
+0|farm-inv | Initializing database...
+0|farm-inv | 3:35:44 PM [express] Database initialization failed: [object Object]
+0|farm-inv | Initializing database...
+0|farm-inv | 3:35:45 PM [express] Database initialization failed: [object Object]
+0|farm-inv | Initializing database...
+0|farm-inv | 3:36:58 PM [express] Database initialization failed: [object Object]
+0|farm-inv | Initializing database...
+0|farm-inv | 3:36:59 PM [express] Database initialization failed: [object Object]
+0|farm-inv | Initializing database...
+0|farm-inv | 3:36:59 PM [express] Database initialization failed: [object Object]
+0|farm-inv | Initializing database...
+0|farm-inv | 3:37:00 PM [express] Database initialization failed: [object Object]
+0|farm-inv | Initializing database...
+0|farm-inv | 3:37:01 PM [express] Database initialization failed: [object Object]
+0|farm-inv | Initializing database...
+0|farm-inv | 3:37:01 PM [express] Database initialization failed: [object Object]
+0|farm-inv | Initializing database...
+0|farm-inv | 3:37:02 PM [express] Database initialization failed: [object Object]
+0|farm-inv | Initializing database...
+0|farm-inv | 3:37:03 PM [express] Database initialization failed: [object Object]
+0|farm-inv | Initializing database...
+0|farm-inv | 3:37:03 PM [express] Database initialization failed: [object Object]
+0|farm-inv | Initializing database...
+0|farm-inv | 3:37:04 PM [express] Database initialization failed: [object Object]
+0|farm-inv | Initializing database...
+0|farm-inv | 3:37:05 PM [express] Database initialization failed: [object Object]
+0|farm-inv | Initializing database...
+0|farm-inv | 3:37:05 PM [express] Database initialization failed: [object Object]
+0|farm-inv | Initializing database...
+0|farm-inv | 3:37:06 PM [express] Database initialization failed: [object Object]
+0|farm-inv | Initializing database...
+0|farm-inv | 3:37:07 PM [express] Database initialization failed: [object Object]
+0|farm-inv | Initializing database...
+0|farm-inv | 3:37:07 PM [express] Database initialization failed: [object Object]
+0|farm-inv | Initializing database...
+0|farm-inv | 3:37:09 PM [express] Database initialization failed: [object Object]
+0|farm-inv | Initializing database...
+0|farm-inv | 3:37:09 PM [express] Database initialization failed: [object Object]
+0|farm-inv | Initializing database...
+0|farm-inv | 3:37:10 PM [express] Database initialization failed: [object Object]
+0|farm-inv | Initializing database...
+0|farm-inv | 3:37:11 PM [express] Database initialization failed: [object Object]
+0|farm-inv | Initializing database...
+0|farm-inv | 3:37:11 PM [express] Database initialization failed: [object Object]
+0|farm-inv | Initializing database...
+0|farm-inv | 3:37:12 PM [express] Database initialization failed: [object Object]
+0|farm-inv | Initializing database...
+0|farm-inv | 3:37:13 PM [express] Database initialization failed: [object Object]
+0|farm-inv | Initializing database...
+0|farm-inv | 3:37:13 PM [express] Database initialization failed: [object Object]
+0|farm-inv | Initializing database...
+0|farm-inv | 3:37:14 PM [express] Database initialization failed: [object Object]
+0|farm-inv | Initializing database...
+0|farm-inv | 3:37:15 PM [express] Database initialization failed: [object Object]
+0|farm-inv | Initializing database...
+0|farm-inv | 3:37:15 PM [express] Database initialization failed: [object Object]
+0|farm-inv | Initializing database...
+0|farm-inv | 3:37:16 PM [express] Database initialization failed: [object Object]

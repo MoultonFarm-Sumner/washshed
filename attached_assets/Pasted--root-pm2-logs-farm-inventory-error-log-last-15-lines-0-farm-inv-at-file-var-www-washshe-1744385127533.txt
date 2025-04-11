@@ -1,0 +1,19 @@
+/root/.pm2/logs/farm-inventory-error.log last 15 lines:
+0|farm-inv |     at file:///var/www/washshed/dist/index.js:1162:11
+0|farm-inv |     at file:///var/www/washshed/dist/index.js:1188:3
+0|farm-inv |     at ModuleJob.run (node:internal/modules/esm/module_job:263:25)
+0|farm-inv |     at async ModuleLoader.import (node:internal/modules/esm/loader:540:24)
+0|farm-inv | Error initializing database: Error: No database host or connection string was set, and key parameters have default values (host: localhost, user: root, db: root, password: null). Is an environment variable missing? Alternatively, if you intended to connect with these parameters, please set the host to 'localhost' explicitly.
+0|farm-inv |     at An.connect (file:///var/www/washshed/node_modules/@neondatabase/serverless/index.mjs:1579:62)
+0|farm-inv |     at Cn.newClient (file:///var/www/washshed/node_modules/@neondatabase/serverless/index.mjs:1383:3)
+0|farm-inv |     at Cn.connect (file:///var/www/washshed/node_modules/@neondatabase/serverless/index.mjs:1378:23)
+0|farm-inv |     at Cn.query (file:///var/www/washshed/node_modules/@neondatabase/serverless/index.mjs:1407:63)
+0|farm-inv |     at Cn.query (file:///var/www/washshed/node_modules/@neondatabase/serverless/index.mjs:1623:14)
+0|farm-inv |     at initializeDatabase (file:///var/www/washshed/dist/index.js:203:16)
+0|farm-inv |     at file:///var/www/washshed/dist/index.js:1162:11
+0|farm-inv |     at file:///var/www/washshed/dist/index.js:1188:3
+0|farm-inv |     at ModuleJob.run (node:internal/modules/esm/module_job:263:25)
+0|farm-inv |     at async ModuleLoader.import (node:internal/modules/esm/loader:540:24)
+
+/root/.pm2/logs/farm-inventory-out.log last 15 lines:
+0|farm-inv | 3:20:28 PM [express] Database initialization failed: Error: No database host or connection string was set, and key parameters have default values (host: localhost, user: root, db: root, password: null). Is an environment variable missing? Alternatively, if you intended to connect with these parameters, please set the host to 'localhost' explicitly.

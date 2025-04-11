@@ -28,12 +28,14 @@ DATABASE_URL=${dbUrl}
 
 // Try to extract parts of the connection string if possible
 try {
-  // Support both postgres:// and postgresql:// formats
-  let connectionRegex = /(?:postgres|postgresql):\/\/([^:]+):([^@]+)@([^:]+):(\d+)\/([^?]+)/;
+  // Support both postgres:// and postgresql:// formats, including query parameters
+  let connectionRegex = /(?:postgres|postgresql):\/\/([^:]+):([^@]+)@([^:\/]+)(?::(\d+))?\/([^?]+)(?:\?.*)?/;
   let matches = dbUrl.match(connectionRegex);
   
   if (matches) {
-    const [, user, password, host, port, database] = matches;
+    let [, user, password, host, port, database] = matches;
+    // Default port to 5432 if not specified
+    port = port || '5432';
     console.log(`Extracted database info: ${user}@${host}:${port}/${database}`);
     
     // Add individual parameters to env file

@@ -29,7 +29,13 @@ const filesToCopy = [
   'server.js',
   'start.bat',
   'start.sh',
-  'README.md'
+  'README.md',
+  'local-db-setup.js',
+  'setup-database.sql',
+  'LOCAL_DB_SETUP.md',
+  'setup-local-db.sh',
+  'setup-local-db.bat',
+  'local.env'
 ];
 
 filesToCopy.forEach(file => {

@@ -1,0 +1,19 @@
+{
+  "name": "farm-inventory-local",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Farm Inventory Management System - Local Version",
+  "scripts": {
+    "start": "node local-setup/server.js",
+    "dev": "node local-setup/server.js"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "^0.10.4",
+    "cookie-parser": "^1.4.7",
+    "dotenv": "^16.4.5",
+    "drizzle-orm": "^0.39.1",
+    "express": "^4.21.2",
+    "ws": "^8.18.0",
+    "zod": "^3.23.8"
+  }
+}
